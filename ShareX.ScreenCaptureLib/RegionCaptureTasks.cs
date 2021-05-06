@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -24,24 +24,20 @@
 #endregion License Information (GPL v3)
 
 using ShareX.HelpersLib;
-using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.IO;
 using System.Windows.Forms;
 
 namespace ShareX.ScreenCaptureLib
 {
     public static class RegionCaptureTasks
     {
-        public static Image GetRegionImage(RegionCaptureOptions options)
+        public static Bitmap GetRegionImage(RegionCaptureOptions options)
         {
-            using (RegionCaptureForm form = new RegionCaptureForm(RegionCaptureMode.Default))
-            {
-                form.Config = GetRegionCaptureOptions(options);
-                form.Config.ShowTips = false;
+            RegionCaptureOptions newOptions = GetRegionCaptureOptions(options);
 
-                form.Prepare();
+            using (RegionCaptureForm form = new RegionCaptureForm(RegionCaptureMode.Default, newOptions))
+            {
                 form.ShowDialog();
 
                 return form.GetResultImage();
@@ -50,12 +46,10 @@ namespace ShareX.ScreenCaptureLib
 
         public static bool GetRectangleRegion(out Rectangle rect, RegionCaptureOptions options)
         {
-            using (RegionCaptureForm form = new RegionCaptureForm(RegionCaptureMode.Default))
-            {
-                form.Config = GetRegionCaptureOptions(options);
-                form.Config.ShowTips = false;
+            RegionCaptureOptions newOptions = GetRegionCaptureOptions(options);
 
-                form.Prepare();
+            using (RegionCaptureForm form = new RegionCaptureForm(RegionCaptureMode.Default, newOptions))
+            {
                 form.ShowDialog();
 
                 if (form.Result == RegionResult.Region)
@@ -93,23 +87,36 @@ namespace ShareX.ScreenCaptureLib
             return false;
         }
 
-        public static PointInfo GetPointInfo(RegionCaptureOptions options)
+        public static bool GetRectangleRegionTransparent(out Rectangle rect)
         {
-            using (RegionCaptureForm form = new RegionCaptureForm(RegionCaptureMode.ScreenColorPicker))
+            using (RegionCaptureTransparentForm regionCaptureTransparentForm = new RegionCaptureTransparentForm())
             {
-                form.Config = GetRegionCaptureOptions(options);
-                form.Config.DetectWindows = false;
-                form.Config.ShowTips = false;
-                form.Config.UseDimming = false;
+                if (regionCaptureTransparentForm.ShowDialog() == DialogResult.OK)
+                {
+                    rect = regionCaptureTransparentForm.SelectionRectangle;
+                    return true;
+                }
+            }
 
-                form.Prepare();
+            rect = Rectangle.Empty;
+            return false;
+        }
+
+        public static PointInfo GetPointInfo(RegionCaptureOptions options, Bitmap canvas = null)
+        {
+            RegionCaptureOptions newOptions = GetRegionCaptureOptions(options);
+            newOptions.DetectWindows = false;
+            newOptions.UseDimming = false;
+
+            using (RegionCaptureForm form = new RegionCaptureForm(RegionCaptureMode.ScreenColorPicker, newOptions, canvas))
+            {
                 form.ShowDialog();
 
                 if (form.Result == RegionResult.Region)
                 {
                     PointInfo pointInfo = new PointInfo();
                     pointInfo.Position = form.CurrentPosition;
-                    pointInfo.Color = form.CurrentColor;
+                    pointInfo.Color = form.ShapeManager.GetCurrentColor();
                     return pointInfo;
                 }
             }
@@ -119,14 +126,12 @@ namespace ShareX.ScreenCaptureLib
 
         public static SimpleWindowInfo GetWindowInfo(RegionCaptureOptions options)
         {
-            using (RegionCaptureForm form = new RegionCaptureForm(RegionCaptureMode.OneClick))
-            {
-                form.Config = GetRegionCaptureOptions(options);
-                form.Config.UseDimming = false;
-                form.Config.ShowMagnifier = false;
-                form.Config.ShowTips = false;
+            RegionCaptureOptions newOptions = GetRegionCaptureOptions(options);
+            newOptions.UseDimming = false;
+            newOptions.ShowMagnifier = false;
 
-                form.Prepare();
+            using (RegionCaptureForm form = new RegionCaptureForm(RegionCaptureMode.OneClick, newOptions))
+            {
                 form.ShowDialog();
 
                 if (form.Result == RegionResult.Region)
@@ -138,99 +143,51 @@ namespace ShareX.ScreenCaptureLib
             return null;
         }
 
+        public static void ShowScreenColorPickerDialog(RegionCaptureOptions options)
+        {
+            Color color = Color.Red;
+            ColorPickerForm colorPickerForm = new ColorPickerForm(color, true);
+            colorPickerForm.EnableScreenColorPickerButton(() => GetPointInfo(options));
+            colorPickerForm.Show();
+        }
+
         public static void ShowScreenRuler(RegionCaptureOptions options)
         {
-            using (RegionCaptureForm form = new RegionCaptureForm(RegionCaptureMode.Ruler))
-            {
-                form.Config = GetRegionCaptureOptions(options);
-                form.Config.QuickCrop = false;
-                form.Config.ShowTips = false;
+            RegionCaptureOptions newOptions = GetRegionCaptureOptions(options);
+            newOptions.QuickCrop = false;
+            newOptions.UseLightResizeNodes = true;
 
-                form.Prepare();
+            using (RegionCaptureForm form = new RegionCaptureForm(RegionCaptureMode.Ruler, newOptions))
+            {
                 form.ShowDialog();
             }
         }
 
-        public static void AnnotateImage(Image img, string filePath, RegionCaptureOptions options,
-            Action<Image> afterCaptureTasksRequested,
-            Action<Image, string> saveImageRequested,
-            Action<Image, string> saveImageAsRequested,
-            Action<Image> copyImageRequested,
-            Action<Image> uploadImageRequested,
-            Action<Image> printImageRequested)
+        public static Bitmap ApplyRegionPathToImage(Bitmap bmp, GraphicsPath gp, out Rectangle resultArea)
         {
-            using (RegionCaptureForm form = new RegionCaptureForm(RegionCaptureMode.Editor))
-            {
-                form.ImageFilePath = filePath;
-
-                form.Config = GetRegionCaptureOptions(options);
-                form.Config.DetectWindows = false;
-                form.Config.ShowTips = false;
-                form.Config.UseDimming = false;
-
-                form.Prepare(img);
-                form.ShowDialog();
-
-                if (form.Result != RegionResult.Close)
-                {
-                    Image result = form.GetResultImage();
-
-                    switch (form.Result)
-                    {
-                        default:
-                            result.Dispose();
-                            break;
-                        case RegionResult.AnnotateRunAfterCaptureTasks:
-                            afterCaptureTasksRequested(result);
-                            break;
-                        case RegionResult.AnnotateSaveImage:
-                            saveImageRequested(result, form.ImageFilePath);
-                            result.Dispose();
-                            break;
-                        case RegionResult.AnnotateSaveImageAs:
-                            saveImageAsRequested(result, form.ImageFilePath);
-                            result.Dispose();
-                            break;
-                        case RegionResult.AnnotateCopyImage:
-                            copyImageRequested(result);
-                            result.Dispose();
-                            break;
-                        case RegionResult.AnnotateUploadImage:
-                            uploadImageRequested(result);
-                            break;
-                        case RegionResult.AnnotatePrintImage:
-                            printImageRequested(result);
-                            result.Dispose();
-                            break;
-                    }
-                }
-            }
-        }
-
-        public static Image ApplyRegionPathToImage(Image img, GraphicsPath gp)
-        {
-            if (img != null && gp != null)
+            if (bmp != null && gp != null)
             {
                 Rectangle regionArea = Rectangle.Round(gp.GetBounds());
                 Rectangle screenRectangle = CaptureHelpers.GetScreenBounds0Based();
-                regionArea = Rectangle.Intersect(regionArea, screenRectangle);
+                resultArea = Rectangle.Intersect(regionArea, screenRectangle);
 
-                if (regionArea.IsValid())
+                if (resultArea.IsValid())
                 {
-                    using (Bitmap bmp = img.CreateEmptyBitmap())
-                    using (Graphics g = Graphics.FromImage(bmp))
-                    using (TextureBrush brush = new TextureBrush(img))
+                    using (Bitmap bmpResult = bmp.CreateEmptyBitmap())
+                    using (Graphics g = Graphics.FromImage(bmpResult))
+                    using (TextureBrush brush = new TextureBrush(bmp))
                     {
                         g.PixelOffsetMode = PixelOffsetMode.Half;
                         g.SmoothingMode = SmoothingMode.HighQuality;
 
                         g.FillPath(brush, gp);
 
-                        return ImageHelpers.CropBitmap(bmp, regionArea);
+                        return ImageHelpers.CropBitmap(bmpResult, resultArea);
                     }
                 }
             }
 
+            resultArea = Rectangle.Empty;
             return null;
         }
 
@@ -244,6 +201,7 @@ namespace ShareX.ScreenCaptureLib
             {
                 return new RegionCaptureOptions()
                 {
+                    DetectControls = options.DetectControls,
                     SnapSizes = options.SnapSizes,
                     ShowMagnifier = options.ShowMagnifier,
                     UseSquareMagnifier = options.UseSquareMagnifier,
@@ -251,7 +209,7 @@ namespace ShareX.ScreenCaptureLib
                     MagnifierPixelSize = options.MagnifierPixelSize,
                     ShowCrosshair = options.ShowCrosshair,
                     AnnotationOptions = options.AnnotationOptions,
-                    ShowMenuTip = options.ShowMenuTip
+                    ScreenColorPickerInfoText = options.ScreenColorPickerInfoText
                 };
             }
         }

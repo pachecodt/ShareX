@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -143,13 +143,7 @@ namespace ShareX
         public DateTime TaskStartTime { get; set; }
         public DateTime TaskEndTime { get; set; }
 
-        public TimeSpan TaskDuration
-        {
-            get
-            {
-                return TaskEndTime - TaskStartTime;
-            }
-        }
+        public TimeSpan TaskDuration => TaskEndTime - TaskStartTime;
 
         public Stopwatch UploadDuration { get; set; }
 
@@ -182,8 +176,8 @@ namespace ShareX
         {
             return new HistoryItem
             {
-                Filename = FileName,
-                Filepath = FilePath,
+                FileName = FileName,
+                FilePath = FilePath,
                 DateTime = TaskEndTime,
                 Type = DataType.ToString(),
                 Host = UploaderHost,

@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -46,15 +46,13 @@ namespace ShareX.ScreenCaptureLib
     {
         Close,
         Region,
+        LastRegion,
         Fullscreen,
         Monitor,
         ActiveMonitor,
         AnnotateRunAfterCaptureTasks,
-        AnnotateSaveImage,
-        AnnotateSaveImageAs,
-        AnnotateCopyImage,
-        AnnotateUploadImage,
-        AnnotatePrintImage
+        AnnotateContinueTask,
+        AnnotateCancelTask
     }
 
     public enum NodeType
@@ -81,21 +79,51 @@ namespace ShareX.ScreenCaptureLib
 
     internal enum NodeShape
     {
-        Square, Circle, Diamond
+        Square, Circle, Diamond, CustomNode
     }
 
     public enum FFmpegVideoCodec
     {
-        [Description("x264 (mp4)")]
+        [Description("H.264 / x264")]
         libx264,
-        [Description("VP8 (webm)")]
+        [Description("H.265 / x265")]
+        libx265,
+        [Description("VP8 (WebM)")]
         libvpx,
-        [Description("Xvid (avi)")]
+        [Description("VP9 (WebM)")]
+        libvpx_vp9,
+        [Description("MPEG-4 / Xvid")]
         libxvid,
-        [Description("Animated GIF (gif)")]
+        [Description("H.264 / NVENC")]
+        h264_nvenc,
+        [Description("HEVC / NVENC")]
+        hevc_nvenc,
+        [Description("H.264 / AMF")]
+        h264_amf,
+        [Description("HEVC / AMF")]
+        hevc_amf,
+        [Description("H.264 / Quick Sync")]
+        h264_qsv,
+        [Description("HEVC / Quick Sync")]
+        hevc_qsv,
+        [Description("GIF")]
         gif,
-        [Description("x265 (mp4)")]
-        libx265
+        [Description("WebP")]
+        libwebp,
+        [Description("APNG")]
+        apng
+    }
+
+    public enum FFmpegAudioCodec
+    {
+        [Description("AAC")]
+        libvoaacenc,
+        [Description("Opus")]
+        libopus,
+        [Description("Vorbis")]
+        libvorbis,
+        [Description("MP3")]
+        libmp3lame
     }
 
     public enum FFmpegPreset
@@ -120,19 +148,77 @@ namespace ShareX.ScreenCaptureLib
         veryslow
     }
 
+    public enum FFmpegNVENCPreset
+    {
+        [Description("Default")]
+        @default,
+        [Description("High quality 2 passes")]
+        slow,
+        [Description("High quality 1 pass")]
+        medium,
+        [Description("High performance 1 pass")]
+        fast,
+        [Description("High performance")]
+        hp,
+        [Description("High quality")]
+        hq,
+        [Description("Bluray disk")]
+        bd,
+        [Description("Low latency")]
+        ll,
+        [Description("Low latency high quality")]
+        llhq,
+        [Description("Low latency high performance")]
+        llhp,
+        [Description("Lossless")]
+        lossless,
+        [Description("Lossless high performance")]
+        losslesshp
+    }
+
+    public enum FFmpegAMFUsage
+    {
+        [Description("Generic Transcoding")]
+        transcoding = 0,
+        [Description("Ultra Low Latency")]
+        ultralowlatency = 1,
+        [Description("Low Latency")]
+        lowlatency = 2,
+        [Description("Webcam")]
+        webcam = 3
+    }
+
+    public enum FFmpegAMFQuality
+    {
+        [Description("Prefer Speed")]
+        speed = 0,
+        [Description("Balanced")]
+        balanced = 1,
+        [Description("Prefer Quality")]
+        quality = 2
+    }
+
+    public enum FFmpegQSVPreset
+    {
+        [Description("Very fast")]
+        veryfast,
+        [Description("Faster")]
+        faster,
+        [Description("Fast")]
+        fast,
+        [Description("Medium")]
+        medium,
+        [Description("Slow")]
+        slow,
+        [Description("Slower")]
+        slower,
+        [Description("Very slow")]
+        veryslow
+    }
+
     public enum FFmpegTune
     {
         film, animation, grain, stillimage, psnr, ssim, fastdecode, zerolatency
-    }
-
-    public enum FFmpegAudioCodec
-    {
-        [Description("AAC")]
-        libvoaacenc,
-        [Description("Vorbis")]
-        libvorbis,
-        [Description("MP3")]
-        libmp3lame
     }
 
     public enum FFmpegPaletteGenStatsMode
@@ -157,7 +243,8 @@ namespace ShareX.ScreenCaptureLib
         ScreenColorPicker,
         Ruler,
         OneClick,
-        Editor
+        Editor,
+        TaskEditor
     }
 
     public enum RegionCaptureAction // Localized
@@ -166,7 +253,6 @@ namespace ShareX.ScreenCaptureLib
         CancelCapture,
         RemoveShapeCancelCapture,
         RemoveShape,
-        OpenOptionsMenu,
         SwapToolType,
         CaptureFullscreen,
         CaptureActiveMonitor
@@ -176,35 +262,35 @@ namespace ShareX.ScreenCaptureLib
     {
         Region,
         Drawing,
-        Effect
+        Effect,
+        Tool
     }
 
     public enum ShapeType // Localized
     {
         RegionRectangle,
-        RegionRoundedRectangle,
         RegionEllipse,
         RegionFreehand,
+        ToolSelect,
         DrawingRectangle,
-        DrawingRoundedRectangle,
         DrawingEllipse,
         DrawingFreehand,
         DrawingLine,
         DrawingArrow,
-        DrawingText,
+        DrawingTextOutline,
+        DrawingTextBackground,
         DrawingSpeechBalloon,
         DrawingStep,
+        DrawingMagnify,
         DrawingImage,
+        DrawingImageScreen,
+        DrawingSticker,
+        DrawingCursor,
+        DrawingSmartEraser,
         EffectBlur,
         EffectPixelate,
-        EffectHighlight
-    }
-
-    public enum RegionAnnotateMode
-    {
-        Capture,
-        Rectangle,
-        Pen
+        EffectHighlight,
+        ToolCrop
     }
 
     public enum ScrollingCaptureScrollMethod // Localized
@@ -221,5 +307,35 @@ namespace ShareX.ScreenCaptureLib
         SendMessageTop,
         KeyPressHome,
         None
+    }
+
+    public enum ImageEditorStartMode // Localized
+    {
+        AutoSize,
+        Normal,
+        Maximized,
+        PreviousState,
+        Fullscreen
+    }
+
+    public enum ImageInsertMethod
+    {
+        Center,
+        CanvasExpandDown,
+        CanvasExpandRight
+    }
+
+    public enum BorderStyle
+    {
+        Solid,
+        Dash,
+        Dot,
+        DashDot,
+        DashDotDot
+    }
+
+    public enum ScreenRecordState
+    {
+        Waiting, BeforeStart, AfterStart, AfterRecordingStart, Encoding
     }
 }

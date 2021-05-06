@@ -141,4 +141,10 @@
   <data name="lblPath.Text" xml:space="preserve">
     <value>파일 경로:</value>
   </data>
+  <data name="cbHiddenWindow.Text" xml:space="preserve">
+    <value>창 숨기기</value>
+  </data>
+  <data name="cbDeleteInputFile.Text" xml:space="preserve">
+    <value>입력 파일 제거</value>
+  </data>
 </root>

@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using System;
 using System.ComponentModel;
 
 namespace ShareX.UploadersLib
@@ -34,13 +35,11 @@ namespace ShareX.UploadersLib
         Imgur,
         [Description("ImageShack")]
         ImageShack,
-        [Description("TinyPic")]
-        TinyPic,
         [Description("Flickr")]
         Flickr,
         [Description("Photobucket")]
         Photobucket,
-        [Description("Google Photos (Picasa)")]
+        [Description("Google Photos")]
         Picasa,
         [Description("Twitter")]
         Twitter,
@@ -48,12 +47,6 @@ namespace ShareX.UploadersLib
         Chevereto,
         [Description("vgy.me")]
         Vgyme,
-        [Description("SomeImage")]
-        SomeImage,
-        [Description("Imgland")]
-        Imgland,
-        [Description("SLiMG")]
-        Slimg,
         CustomImageUploader, // Localized
         FileUploader // Localized
     }
@@ -67,18 +60,20 @@ namespace ShareX.UploadersLib
         Paste2,
         [Description("Slexy")]
         Slexy,
-        [Description("Pastee.org")]
-        Pastee,
         [Description("Paste.ee")]
         Paste_ee,
         [Description("GitHub Gist")]
         Gist,
+        [Description("Teknik")]
+        Teknik,
         [Description("uPaste")]
         Upaste,
         [Description("Hastebin")]
         Hastebin,
         [Description("OneTimeSecret")]
         OneTimeSecret,
+        [Description("Pastie")]
+        Pastie,
         CustomTextUploader, // Localized
         FileUploader // Localized
     }
@@ -102,18 +97,22 @@ namespace ShareX.UploadersLib
         Mega,
         [Description("Amazon S3")]
         AmazonS3,
-        [Description("ownCloud")]
+        [Description("Google Cloud Storage")]
+        GoogleCloudStorage,
+        [Description("Azure Storage")]
+        AzureStorage,
+        [Description("Backblaze B2")]
+        BackblazeB2,
+        [Description("Gfycat")]
+        Gfycat,
+        [Description("ownCloud / Nextcloud")]
         OwnCloud,
         [Description("MediaFire")]
         MediaFire,
-        [Description("Gfycat")]
-        Gfycat,
         [Description("Pushbullet")]
         Pushbullet,
         [Description("SendSpace")]
         SendSpace,
-        [Description("Minus")]
-        Minus,
         [Description("Ge.tt")]
         Ge_tt,
         [Description("Hostr")]
@@ -124,12 +123,12 @@ namespace ShareX.UploadersLib
         Lambda,
         [Description("VideoBin")]
         VideoBin,
+        [Description("Teknik")]
+        Teknik,
         [Description("Pomf")]
         Pomf,
         [Description("Uguu")]
         Uguu,
-        [Description("Dropfile")]
-        Dropfile,
         [Description("Seafile")]
         Seafile,
         [Description("Streamable")]
@@ -140,8 +139,12 @@ namespace ShareX.UploadersLib
         Lithiio,
         [Description("transfer.sh")]
         Transfersh,
-        [Description("Uplea")]
-        Uplea,
+        [Description("Plik")]
+        Plik,
+        [Description("YouTube")]
+        YouTube,
+        [Description("Vault.ooo")]
+        Vault_ooo,
         SharedFolder, // Localized
         Email, // Localized
         CustomFileUploader // Localized
@@ -152,8 +155,6 @@ namespace ShareX.UploadersLib
     {
         [Description("bit.ly")]
         BITLY,
-        [Description("goo.gl")]
-        Google,
         [Description("is.gd")]
         ISGD,
         [Description("v.gd")]
@@ -166,16 +167,22 @@ namespace ShareX.UploadersLib
         YOURLS,
         [Description("adf.ly")]
         AdFly,
-        [Description("coinurl.com")]
-        CoinURL,
         [Description("qr.net")]
         QRnet,
+        [Description("tknk.io")]
+        Teknik,
         [Description("vurl.com")]
         VURL,
         [Description("2.gp")]
         TwoGP,
         [Description("Polr")]
         Polr,
+        [Description("Firebase Dynamic Links")]
+        FirebaseDynamicLinks,
+        [Description("Kutt")]
+        Kutt,
+        [Description("Zero Width Shortener")]
+        ZeroWidthShortener,
         CustomURLShortener // Localized
     }
 
@@ -187,8 +194,6 @@ namespace ShareX.UploadersLib
         Twitter,
         [Description("Facebook")]
         Facebook,
-        [Description("Google+")]
-        GooglePlus,
         [Description("Reddit")]
         Reddit,
         [Description("Pinterest")]
@@ -204,7 +209,9 @@ namespace ShareX.UploadersLib
         [Description("VK")]
         VK,
         [Description("Pushbullet")]
-        Pushbullet
+        Pushbullet,
+        GoogleImageSearch, // Localized
+        CustomURLSharingService // Localized
     }
 
     public enum HttpMethod
@@ -288,28 +295,32 @@ namespace ShareX.UploadersLib
         LocalFilePathUri
     }
 
-    public enum CustomUploaderType
+    public enum CustomUploaderBody
     {
-        Image,
-        Text,
-        File,
-        URL
+        [Description("No body")]
+        None,
+        [Description("Form data (multipart/form-data)")]
+        MultipartFormData,
+        [Description("Form URL encoded (application/x-www-form-urlencoded)")]
+        FormURLEncoded,
+        [Description("JSON (application/json)")]
+        JSON,
+        [Description("XML (application/xml)")]
+        XML,
+        [Description("Binary")]
+        Binary
     }
 
-    public enum CustomUploaderRequestType
+    [Flags]
+    public enum CustomUploaderDestinationType
     {
-        POST,
-        GET,
-        PUT,
-        PATCH,
-        DELETE
-    }
-
-    public enum CustomUploaderResponseParseType
-    {
-        Regex,
-        Json,
-        Xml
+        [Description("None")]
+        None = 0,
+        ImageUploader = 1, // Localized
+        TextUploader = 1 << 1, // Localized
+        FileUploader = 1 << 2, // Localized
+        URLShortener = 1 << 3, // Localized
+        URLSharingService = 1 << 4 // Localized
     }
 
     public enum FTPSEncryption
@@ -331,10 +342,28 @@ namespace ShareX.UploadersLib
         LoginFailed
     }
 
-    public enum URLType
+    public enum CustomUploaderURLType
     {
         URL,
         ThumbnailURL,
-        DeletionURL
+        DeletionURL,
+        ErrorMessage
+    }
+
+    public enum YouTubeVideoPrivacy // Localized
+    {
+        Public,
+        Unlisted,
+        Private
+    }
+
+    public enum BoxShareAccessLevel
+    {
+        [Description("Public - People with the link")]
+        Open,
+        [Description("Company - People in your company")]
+        Company,
+        [Description("Collaborators - Invited people only")]
+        Collaborators
     }
 }

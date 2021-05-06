@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -59,11 +59,11 @@ namespace ShareX.HelpersLib
             }
         }
 
-        public static void AddRoundedRectangle(this GraphicsPath graphicsPath, RectangleF rect, float radius)
+        public static void AddRoundedRectangle(this GraphicsPath gp, RectangleF rect, float radius)
         {
             if (radius <= 0f)
             {
-                graphicsPath.AddRectangle(rect);
+                gp.AddRectangle(rect);
             }
             else
             {
@@ -72,7 +72,7 @@ namespace ShareX.HelpersLib
                 // then return a capsule instead of a lozenge
                 if (radius >= (Math.Min(rect.Width, rect.Height) / 2.0f))
                 {
-                    graphicsPath.AddCapsule(rect);
+                    gp.AddCapsule(rect);
                 }
                 else
                 {
@@ -83,26 +83,26 @@ namespace ShareX.HelpersLib
                     RectangleF arc = new RectangleF(rect.Location, size);
 
                     // Top left arc
-                    graphicsPath.AddArc(arc, 180, 90);
+                    gp.AddArc(arc, 180, 90);
 
                     // Top right arc
                     arc.X = rect.Right - diameter;
-                    graphicsPath.AddArc(arc, 270, 90);
+                    gp.AddArc(arc, 270, 90);
 
                     // Bottom right arc
                     arc.Y = rect.Bottom - diameter;
-                    graphicsPath.AddArc(arc, 0, 90);
+                    gp.AddArc(arc, 0, 90);
 
                     // Bottom left arc
                     arc.X = rect.Left;
-                    graphicsPath.AddArc(arc, 90, 90);
+                    gp.AddArc(arc, 90, 90);
 
-                    graphicsPath.CloseFigure();
+                    gp.CloseFigure();
                 }
             }
         }
 
-        public static void AddCapsule(this GraphicsPath graphicsPath, RectangleF rect)
+        public static void AddCapsule(this GraphicsPath gp, RectangleF rect)
         {
             float diameter;
             RectangleF arc;
@@ -115,9 +115,9 @@ namespace ShareX.HelpersLib
                     diameter = rect.Height;
                     SizeF sizeF = new SizeF(diameter, diameter);
                     arc = new RectangleF(rect.Location, sizeF);
-                    graphicsPath.AddArc(arc, 90, 180);
+                    gp.AddArc(arc, 90, 180);
                     arc.X = rect.Right - diameter;
-                    graphicsPath.AddArc(arc, 270, 180);
+                    gp.AddArc(arc, 270, 180);
                 }
                 else if (rect.Width < rect.Height)
                 {
@@ -125,30 +125,30 @@ namespace ShareX.HelpersLib
                     diameter = rect.Width;
                     SizeF sizeF = new SizeF(diameter, diameter);
                     arc = new RectangleF(rect.Location, sizeF);
-                    graphicsPath.AddArc(arc, 180, 180);
+                    gp.AddArc(arc, 180, 180);
                     arc.Y = rect.Bottom - diameter;
-                    graphicsPath.AddArc(arc, 0, 180);
+                    gp.AddArc(arc, 0, 180);
                 }
                 else
                 {
                     // Circle
-                    graphicsPath.AddEllipse(rect);
+                    gp.AddEllipse(rect);
                 }
             }
             catch
             {
-                graphicsPath.AddEllipse(rect);
+                gp.AddEllipse(rect);
             }
 
-            graphicsPath.CloseFigure();
+            gp.CloseFigure();
         }
 
         public static void AddDiamond(this GraphicsPath graphicsPath, RectangleF rect)
         {
-            PointF p1 = new PointF(rect.X + rect.Width / 2.0f, rect.Y);
-            PointF p2 = new PointF(rect.X + rect.Width, rect.Y + rect.Height / 2.0f);
-            PointF p3 = new PointF(rect.X + rect.Width / 2.0f, rect.Y + rect.Height);
-            PointF p4 = new PointF(rect.X, rect.Y + rect.Height / 2.0f);
+            PointF p1 = new PointF(rect.X + (rect.Width / 2.0f), rect.Y);
+            PointF p2 = new PointF(rect.X + rect.Width, rect.Y + (rect.Height / 2.0f));
+            PointF p3 = new PointF(rect.X + (rect.Width / 2.0f), rect.Y + rect.Height);
+            PointF p4 = new PointF(rect.X, rect.Y + (rect.Height / 2.0f));
 
             graphicsPath.AddPolygon(new PointF[] { p1, p2, p3, p4 });
         }
@@ -161,8 +161,8 @@ namespace ShareX.HelpersLib
 
             for (int i = 0; i < sideCount; i++)
             {
-                points[i] = new PointF(rect.X + ((rect.Width / 2.0f) * (float)Math.Cos(a)) + rect.Width / 2.0f,
-                    rect.Y + ((rect.Height / 2.0f) * (float)Math.Sin(a)) + rect.Height / 2.0f);
+                points[i] = new PointF(rect.X + ((rect.Width / 2.0f) * (float)Math.Cos(a)) + (rect.Width / 2.0f),
+                    rect.Y + ((rect.Height / 2.0f) * (float)Math.Sin(a)) + (rect.Height / 2.0f));
 
                 a += (float)Math.PI * 2.0f / sideCount;
             }

@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -42,13 +42,11 @@ namespace ShareX.HelpersLib
 
         public MyMessageBox(string text, string caption, MessageBoxButtons buttons = MessageBoxButtons.OK, string checkBoxText = null, bool isChecked = false)
         {
-            Icon = ShareXResources.Icon;
-
             Width = 180;
             Height = 100;
             Text = caption;
+            BackColor = SystemColors.Window;
             FormBorderStyle = FormBorderStyle.FixedDialog;
-            ShowInTaskbar = false;
             TopMost = true;
             StartPosition = FormStartPosition.CenterScreen;
             MinimizeBox = false;
@@ -147,6 +145,13 @@ namespace ShareX.HelpersLib
             panel.Location = new Point(0, labelPanel.Bottom + LabelVerticalPadding);
             panel.Size = new Size(labelPanel.Width + (LabelHorizontalPadding * 2), button1.Height + (ButtonPadding * 2));
             ClientSize = new Size(panel.Width, labelPanel.Height + (LabelVerticalPadding * 2) + panel.Height);
+
+            ShareXResources.ApplyTheme(this);
+
+            if (ShareXResources.UseCustomTheme)
+            {
+                panel.BackColor = ShareXResources.Theme.BorderColor;
+            }
         }
 
         private void MyMessageBox_Shown(object sender, System.EventArgs e)
@@ -160,18 +165,6 @@ namespace ShareX.HelpersLib
             {
                 return messageBox.ShowDialog();
             }
-        }
-
-        private void InitializeComponent()
-        {
-            this.SuspendLayout();
-            //
-            // MyMessageBox
-            //
-            this.BackColor = System.Drawing.SystemColors.Window;
-            this.ClientSize = new System.Drawing.Size(284, 261);
-            this.Name = "MyMessageBox";
-            this.ResumeLayout(false);
         }
     }
 }

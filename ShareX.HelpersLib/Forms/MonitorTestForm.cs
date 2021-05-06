@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -35,7 +35,7 @@ namespace ShareX.HelpersLib
         public MonitorTestForm()
         {
             InitializeComponent();
-            Icon = ShareXResources.Icon;
+            ShareXResources.ApplyTheme(this);
 
             Rectangle screenBounds = CaptureHelpers.GetScreenBounds();
             Location = screenBounds.Location;
@@ -44,7 +44,7 @@ namespace ShareX.HelpersLib
             rbBlackWhite.Checked = true;
             tbBlackWhite.Value = 128;
             tbRed.Value = 255;
-            cbGradient.Items.AddRange(Enum.GetNames(typeof(LinearGradientMode)));
+            cbGradient.Items.AddRange(Helpers.GetLocalizedEnumDescriptions<LinearGradientMode>());
             cbGradient.SelectedIndex = 1;
             btnGradientColor1.Color = Color.DarkGray;
             btnGradientColor2.Color = Color.Black;
@@ -225,16 +225,14 @@ namespace ShareX.HelpersLib
 
         private void btnColorDialog_Click(object sender, EventArgs e)
         {
-            using (ColorPickerForm dialogColor = new ColorPickerForm(Color.FromArgb(tbRed.Value, tbGreen.Value, tbBlue.Value)))
+            Color currentColor = Color.FromArgb(tbRed.Value, tbGreen.Value, tbBlue.Value);
+
+            if (ColorPickerForm.PickColor(currentColor, out Color newColor, this))
             {
-                if (dialogColor.ShowDialog() == DialogResult.OK)
-                {
-                    Color color = dialogColor.NewColor;
-                    tbRed.Value = color.R;
-                    tbGreen.Value = color.G;
-                    tbBlue.Value = color.B;
-                    DrawRedGreenBlue();
-                }
+                tbRed.Value = newColor.R;
+                tbGreen.Value = newColor.G;
+                tbBlue.Value = newColor.B;
+                DrawRedGreenBlue();
             }
         }
 

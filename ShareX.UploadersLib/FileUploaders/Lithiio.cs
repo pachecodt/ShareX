@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -26,7 +26,9 @@
 // Credits: https://github.com/lithium720
 
 using Newtonsoft.Json;
+using ShareX.HelpersLib;
 using ShareX.UploadersLib.Properties;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -38,7 +40,7 @@ namespace ShareX.UploadersLib.FileUploaders
     {
         public override FileDestination EnumValue { get; } = FileDestination.Lithiio;
 
-        public override Icon ServiceIcon => Resources.Lithiio;
+        public override Image ServiceImage => Resources.Lithiio;
 
         public override bool CheckConfig(UploadersConfig config)
         {
@@ -57,49 +59,84 @@ namespace ShareX.UploadersLib.FileUploaders
     {
         public LithiioSettings Config { get; private set; }
 
+        public Lithiio()
+        {
+        }
+
         public Lithiio(LithiioSettings config)
         {
             Config = config;
         }
 
-        private const string uploadUrl = "http://api.lithi.io/v3/";
-
-        public static string[] UploadURLs = new string[] { "https://i.lithi.io/", "https://lithi.io/i/", "https://i.mugi.io/", "https://mugi.io/i/" };
-
         public override UploadResult Upload(Stream stream, string fileName)
         {
-            Dictionary<string, string> arguments = new Dictionary<string, string>();
-            arguments.Add("key", Config.UserAPIKey);
-            arguments.Add("linktype", Config.UploadURL);
-            UploadResult result = UploadData(stream, uploadUrl, fileName, "file", arguments);
+            Dictionary<string, string> args = new Dictionary<string, string>();
+            args.Add("api_key", Config.UserAPIKey);
+
+            UploadResult result = SendRequestFile("https://lithi.io/api/v2/upload", stream, fileName, "file", args);
 
             if (result.IsSuccess)
             {
-                LithiioResponse response = JsonConvert.DeserializeObject<LithiioResponse>(result.Response);
-                if (response.Success)
+                LithiioUploadResponse uploadResponse = JsonConvert.DeserializeObject<LithiioUploadResponse>(result.Response);
+
+                if (uploadResponse.Success)
                 {
-                    result.URL = response.URL;
+                    result.URL = uploadResponse.URL;
                 }
                 else
                 {
-                    Errors.Add(response.Error);
+                    Errors.Add(uploadResponse.Error);
                 }
             }
 
             return result;
         }
 
-        public class LithiioResponse
+        public string FetchAPIKey(string email, string password)
+        {
+            Dictionary<string, string> args = new Dictionary<string, string>();
+            args.Add("email", email);
+            args.Add("password", password);
+
+            string response = SendRequestMultiPart("https://lithi.io/api/v2/fetch-api-key", args);
+
+            if (!string.IsNullOrEmpty(response))
+            {
+                LithiioFetchAPIKeyResponse apiKeyResponse = JsonConvert.DeserializeObject<LithiioFetchAPIKeyResponse>(response);
+
+                if (apiKeyResponse.Success)
+                {
+                    return apiKeyResponse.API_Key;
+                }
+                else
+                {
+                    throw new Exception(apiKeyResponse.Error);
+                }
+            }
+
+            return null;
+        }
+
+        private class LithiioResponse
         {
             public bool Success { get; set; }
-            public string URL { get; set; }
             public string Error { get; set; }
+        }
+
+        private class LithiioUploadResponse : LithiioResponse
+        {
+            public string URL { get; set; }
+        }
+
+        private class LithiioFetchAPIKeyResponse : LithiioResponse
+        {
+            public string API_Key { get; set; }
         }
     }
 
     public class LithiioSettings
     {
+        [JsonEncrypt]
         public string UserAPIKey { get; set; } = "";
-        public string UploadURL { get; set; } = "https://i.lithi.io/";
     }
 }

@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -30,26 +30,19 @@ using ShareX.UploadersLib.Properties;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 
 namespace ShareX.UploadersLib.ImageUploaders
 {
-    public enum ImgurThumbnailType
+    public enum ImgurThumbnailType // Localized
     {
-        [Description("Small square")]
         Small_Square,
-        [Description("Big square")]
         Big_Square,
-        [Description("Small thumbnail")]
         Small_Thumbnail,
-        [Description("Medium thumbnail")]
         Medium_Thumbnail,
-        [Description("Large thumbnail")]
         Large_Thumbnail,
-        [Description("Huge thumbnail")]
         Huge_Thumbnail
     }
 
@@ -111,7 +104,7 @@ namespace ShareX.UploadersLib.ImageUploaders
             args.Add("client_id", AuthInfo.Client_ID);
             args.Add("response_type", "pin");
 
-            return CreateQuery("https://api.imgur.com/oauth2/authorize", args);
+            return URLHelpers.CreateQueryString("https://api.imgur.com/oauth2/authorize", args);
         }
 
         public bool GetAccessToken(string pin)
@@ -122,7 +115,7 @@ namespace ShareX.UploadersLib.ImageUploaders
             args.Add("grant_type", "pin");
             args.Add("pin", pin);
 
-            string response = SendRequest(HttpMethod.POST, "https://api.imgur.com/oauth2/token", args);
+            string response = SendRequestMultiPart("https://api.imgur.com/oauth2/token", args);
 
             if (!string.IsNullOrEmpty(response))
             {
@@ -149,7 +142,7 @@ namespace ShareX.UploadersLib.ImageUploaders
                 args.Add("client_secret", AuthInfo.Client_Secret);
                 args.Add("grant_type", "refresh_token");
 
-                string response = SendRequest(HttpMethod.POST, "https://api.imgur.com/oauth2/token", args);
+                string response = SendRequestMultiPart("https://api.imgur.com/oauth2/token", args);
 
                 if (!string.IsNullOrEmpty(response))
                 {
@@ -193,11 +186,41 @@ namespace ShareX.UploadersLib.ImageUploaders
             return true;
         }
 
-        public List<ImgurAlbumData> GetAlbums()
+        public List<ImgurAlbumData> GetAlbums(int maxPage = 10, int perPage = 100)
+        {
+            List<ImgurAlbumData> albums = new List<ImgurAlbumData>();
+
+            for (int i = 0; i < maxPage; i++)
+            {
+                List<ImgurAlbumData> tempAlbums = GetAlbumsPage(i, perPage);
+
+                if (tempAlbums != null && tempAlbums.Count > 0)
+                {
+                    albums.AddRange(tempAlbums);
+
+                    if (tempAlbums.Count < perPage)
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return albums;
+        }
+
+        private List<ImgurAlbumData> GetAlbumsPage(int page, int perPage)
         {
             if (CheckAuthorization())
             {
-                string response = SendRequest(HttpMethod.GET, "https://api.imgur.com/3/account/me/albums", headers: GetAuthHeaders());
+                Dictionary<string, string> args = new Dictionary<string, string>();
+                args.Add("page", page.ToString()); // default: 0
+                args.Add("perPage", perPage.ToString()); // default: 50, max: 100
+
+                string response = SendRequest(HttpMethod.GET, "https://api.imgur.com/3/account/me/albums", args, GetAuthHeaders());
 
                 ImgurResponse imgurResponse = JsonConvert.DeserializeObject<ImgurResponse>(response);
 
@@ -206,6 +229,30 @@ namespace ShareX.UploadersLib.ImageUploaders
                     if (imgurResponse.success && imgurResponse.status == 200)
                     {
                         return ((JArray)imgurResponse.data).ToObject<List<ImgurAlbumData>>();
+                    }
+                    else
+                    {
+                        HandleErrors(imgurResponse);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public List<ImgurImageData> GetAlbumImages(string albumID)
+        {
+            if (CheckAuthorization())
+            {
+                string response = SendRequest(HttpMethod.GET, $"https://api.imgur.com/3/album/{albumID}/images", headers: GetAuthHeaders());
+
+                ImgurResponse imgurResponse = JsonConvert.DeserializeObject<ImgurResponse>(response);
+
+                if (imgurResponse != null)
+                {
+                    if (imgurResponse.success && imgurResponse.status == 200)
+                    {
+                        return ((JArray)imgurResponse.data).ToObject<List<ImgurImageData>>();
                     }
                     else
                     {
@@ -247,8 +294,20 @@ namespace ShareX.UploadersLib.ImageUploaders
                 headers.Add("Authorization", "Client-ID " + AuthInfo.Client_ID);
             }
 
-            WebExceptionReturnResponse = true;
-            UploadResult result = UploadData(stream, "https://api.imgur.com/3/image", fileName, "image", args, headers);
+            ReturnResponseOnError = true;
+
+            string fileFormName;
+
+            if (Helpers.IsVideoFile(fileName))
+            {
+                fileFormName = "video";
+            }
+            else
+            {
+                fileFormName = "image";
+            }
+
+            UploadResult result = SendRequestFile("https://api.imgur.com/3/upload", stream, fileName, fileFormName, args, headers);
 
             if (!string.IsNullOrEmpty(result.Response))
             {
@@ -275,7 +334,7 @@ namespace ShareX.UploadersLib.ImageUploaders
                             }
                             else
                             {
-                                result.URL = "http://imgur.com/" + imageData.id;
+                                result.URL = $"https://imgur.com/{imageData.id}";
                             }
 
                             string thumbnail = "";
@@ -302,27 +361,27 @@ namespace ShareX.UploadersLib.ImageUploaders
                                     break;
                             }
 
-                            result.ThumbnailURL = string.Format("http://i.imgur.com/{0}{1}.jpg", imageData.id, thumbnail); // Thumbnails always jpg
-                            result.DeletionURL = "http://imgur.com/delete/" + imageData.deletehash;
+                            result.ThumbnailURL = $"https://i.imgur.com/{imageData.id}{thumbnail}.jpg"; // Imgur thumbnails always jpg
+                            result.DeletionURL = $"https://imgur.com/delete/{imageData.deletehash}";
                         }
                     }
                     else
                     {
-                        ImgurErrorData errorData = ((JObject)imgurResponse.data).ToObject<ImgurErrorData>();
+                        ImgurErrorData errorData = ParseError(imgurResponse);
 
                         if (errorData != null)
                         {
                             if (UploadMethod == AccountType.User && refreshTokenOnError &&
-                                errorData.error.Equals("The access token provided is invalid.", StringComparison.InvariantCultureIgnoreCase) && RefreshAccessToken())
+                                ((string)errorData.error).Equals("The access token provided is invalid.", StringComparison.InvariantCultureIgnoreCase) &&
+                                RefreshAccessToken())
                             {
                                 DebugHelper.WriteLine("Imgur access token refreshed, reuploading image.");
 
                                 return InternalUpload(stream, fileName, false);
                             }
 
-                            string errorMessage = string.Format("Imgur upload failed: ({0}) {1}", imgurResponse.status, errorData.error);
-                            Errors.Clear();
-                            Errors.Add(errorMessage);
+                            string errorMessage = $"Imgur upload failed: ({imgurResponse.status}) {errorData.error}";
+                            Errors.Insert(0, errorMessage);
                         }
                     }
                 }
@@ -333,28 +392,47 @@ namespace ShareX.UploadersLib.ImageUploaders
 
         private void HandleErrors(ImgurResponse response)
         {
-            ImgurErrorData errorData = ((JObject)response.data).ToObject<ImgurErrorData>();
+            ImgurErrorData errorData = ParseError(response);
 
             if (errorData != null)
             {
-                string errorMessage = string.Format("Status: {0}, Request: {1}, Error: {2}", response.status, errorData.request, errorData.error);
-                Errors.Add(errorMessage);
+                Errors.Add($"Status: {response.status}, Request: {errorData.request}, Error: {errorData.error}");
             }
+        }
+
+        private ImgurErrorData ParseError(ImgurResponse response)
+        {
+            ImgurErrorData errorData = ((JObject)response.data).ToObject<ImgurErrorData>();
+
+            if (errorData != null && !(errorData.error is string))
+            {
+                errorData.error = ((JObject)errorData.error).ToObject<ImgurError>().message;
+            }
+
+            return errorData;
         }
     }
 
-    public class ImgurResponse
+    internal class ImgurResponse
     {
         public object data { get; set; }
         public bool success { get; set; }
         public int status { get; set; }
     }
 
-    public class ImgurErrorData
+    internal class ImgurErrorData
     {
-        public string error { get; set; }
+        public object error { get; set; }
         public string request { get; set; }
         public string method { get; set; }
+    }
+
+    internal class ImgurError
+    {
+        public int code { get; set; }
+        public string message { get; set; }
+        public string type { get; set; }
+        //public string[] exception { get; set; }
     }
 
     public class ImgurImageData
@@ -369,7 +447,7 @@ namespace ShareX.UploadersLib.ImageUploaders
         public int height { get; set; }
         public int size { get; set; }
         public int views { get; set; }
-        public int bandwidth { get; set; }
+        public long bandwidth { get; set; }
         public string deletehash { get; set; }
         public string name { get; set; }
         public string section { get; set; }

@@ -135,21 +135,6 @@
   <data name="Stop" xml:space="preserve">
     <value>Detener</value>
   </data>
-  <data name="ClipboardContentViewer_ClipboardContentViewer_Load_Clipboard_content__Image__Size___0_x_1__" xml:space="preserve">
-    <value>El contenido del portapapeles: Imagen: (Tamaño: {0}x{1})</value>
-  </data>
-  <data name="ClipboardContentViewer_ClipboardContentViewer_Load_Clipboard_content__Text__Length___0__" xml:space="preserve">
-    <value>El contenido del portapapeles: Texto (Longitud: {0})</value>
-  </data>
-  <data name="ClipboardContentViewer_ClipboardContentViewer_Load_Clipboard_content__File__Count___0__" xml:space="preserve">
-    <value>El contenido del portapapeles: Archivo (Número: {0})</value>
-  </data>
-  <data name="ClipboardContentViewer_ClipboardContentViewer_Load_Clipboard_is_empty_or_contains_unknown_data_" xml:space="preserve">
-    <value>Portapapeles está vacío o contiene datos desconocidos.</value>
-  </data>
-  <data name="RegistryHelpers_ShellExtDesc_Upload_with__0_" xml:space="preserve">
-    <value>Subir con {0}</value>
-  </data>
   <data name="PrintTextForm_LoadSettings_Name___0___Size___1_" xml:space="preserve">
     <value>Nombre: {0}, Tamaño: {1}</value>
   </data>
@@ -501,9 +486,6 @@ Tamaño de archivo: {2:n0} / {3:n0} KB</value>
   <data name="HotkeyType_StartScreenRecorderGIF" xml:space="preserve">
     <value>Iniciar grabación de la pantalla (GIF) utilizando la última región</value>
   </data>
-  <data name="HotkeyType_Automate" xml:space="preserve">
-    <value>Abrir / Parar herramienta de automatización</value>
-  </data>
   <data name="HotkeyType_RectangleTransparent" xml:space="preserve">
     <value>Capturar región rectángulo transparente</value>
   </data>
@@ -584,5 +566,8 @@ Tamaño de archivo: {2:n0} / {3:n0} KB</value>
   </data>
   <data name="ReplCodeMenuEntry_uln_User_login_name" xml:space="preserve">
     <value>Nombre de inicio de sesión de usuario</value>
+  </data>
+  <data name="ReplCodeMenuEntry_rf_Random_line_from_file" xml:space="preserve">
+    <value>Línea aleatorio de un archivo. Usa {ruta} para indicar el archivo</value>
   </data>
 </root>

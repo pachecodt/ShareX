@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -71,9 +71,9 @@ namespace ShareX.UploadersLib.FileUploaders
             args.Add("client", "sharex-native");
 
             string url = "https://s-ul.eu";
-            url = URLHelpers.CombineURL(url, "upload.php");
+            string upload_url = URLHelpers.CombineURL(url, "api/v1/upload");
 
-            UploadResult result = UploadData(stream, url, fileName, "file", args);
+            UploadResult result = SendRequestFile(upload_url, stream, fileName, "file", args);
 
             if (result.IsSuccess)
             {
@@ -108,7 +108,7 @@ namespace ShareX.UploadersLib.FileUploaders
                 else
                 {
                     result.URL = protocol + domain + "/" + file + extension;
-                    result.DeletionURL = "https://s-ul.eu/delete.php?key=" + APIKey + "&file=" + file;
+                    result.DeletionURL = URLHelpers.CombineURL(url, "delete.php?key=" + APIKey + "&file=" + file);
                 }
             }
 

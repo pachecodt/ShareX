@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -58,6 +58,7 @@ namespace ShareX.UploadersLib.FileUploaders
                 ShareDaysToExpire = config.SeafileShareDaysToExpire,
                 SharePassword = config.SeafileSharePassword,
                 CreateShareableURL = config.SeafileCreateShareableURL,
+                CreateShareableURLRaw = config.SeafileCreateShareableURLRaw,
                 IgnoreInvalidCert = config.SeafileIgnoreInvalidCert
             };
         }
@@ -76,6 +77,7 @@ namespace ShareX.UploadersLib.FileUploaders
         public int ShareDaysToExpire { get; set; }
         public string SharePassword { get; set; }
         public bool CreateShareableURL { get; set; }
+        public bool CreateShareableURLRaw { get; set; }
         public bool IgnoreInvalidCert { get; set; }
 
         public Seafile(string apiurl, string authtoken, string repoid)
@@ -98,7 +100,7 @@ namespace ShareX.UploadersLib.FileUploaders
                 { "password", password }
             };
 
-            string response = SendRequest(HttpMethod.POST, url, args);
+            string response = SendRequestMultiPart(url, args);
 
             if (!string.IsNullOrEmpty(response))
             {
@@ -365,7 +367,7 @@ namespace ShareX.UploadersLib.FileUploaders
                     sslBypassHelper = new SSLBypassHelper();
                 }
 
-                string response = SendRequest(HttpMethod.POST, url, args, headers);
+                string response = SendRequestMultiPart(url, args, headers);
 
                 if (!string.IsNullOrEmpty(response))
                 {
@@ -442,7 +444,7 @@ namespace ShareX.UploadersLib.FileUploaders
                 args.Add("filename", fileName);
                 args.Add("parent_dir", Path);
 
-                UploadResult result = UploadData(stream, responseURL, fileName, "file", args, headers);
+                UploadResult result = SendRequestFile(responseURL, stream, fileName, "file", args, headers);
 
                 if (!IsError)
                 {
@@ -450,6 +452,15 @@ namespace ShareX.UploadersLib.FileUploaders
                     {
                         AllowReportProgress = false;
                         result.URL = ShareFile(Path + fileName);
+
+                        if (CreateShareableURLRaw)
+                        {
+                            var uriBuilder = new UriBuilder(result.URL);
+                            var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
+                            query["raw"] = "1";
+                            uriBuilder.Query = query.ToString();
+                            result.URL = $"{uriBuilder.Scheme}://{uriBuilder.Host}{uriBuilder.Path}{uriBuilder.Query}";
+                        }
                     }
                     else
                     {
@@ -491,7 +502,8 @@ namespace ShareX.UploadersLib.FileUploaders
                     sslBypassHelper = new SSLBypassHelper();
                 }
 
-                return SendRequestURLEncoded(url, args, headers, method: HttpMethod.PUT, responseType: ResponseType.LocationHeader);
+                SendRequestURLEncoded(HttpMethod.PUT, url, args, headers);
+                return LastResponseInfo.Headers["Location"];
             }
             finally
             {

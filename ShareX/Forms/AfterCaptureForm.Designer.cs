@@ -37,13 +37,13 @@
             this.lvAfterCaptureTasks = new ShareX.HelpersLib.MyListView();
             this.chAfterCapture = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tpBeforeUpload = new System.Windows.Forms.TabPage();
+            this.ucBeforeUpload = new ShareX.BeforeUploadControl();
             this.tpAfterUpload = new System.Windows.Forms.TabPage();
             this.lvAfterUploadTasks = new ShareX.HelpersLib.MyListView();
             this.chAfterUpload = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.lblFileName = new System.Windows.Forms.Label();
             this.txtFileName = new System.Windows.Forms.TextBox();
             this.pbImage = new ShareX.HelpersLib.MyPictureBox();
-            this.ucBeforeUpload = new ShareX.BeforeUploadControl();
             this.tcTasks.SuspendLayout();
             this.tpAfterCapture.SuspendLayout();
             this.tpBeforeUpload.SuspendLayout();
@@ -53,7 +53,6 @@
             // btnContinue
             // 
             resources.ApplyResources(this.btnContinue, "btnContinue");
-            this.btnContinue.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.btnContinue.Name = "btnContinue";
             this.btnContinue.UseVisualStyleBackColor = true;
             this.btnContinue.Click += new System.EventHandler(this.btnContinue_Click);
@@ -84,10 +83,10 @@
             // 
             // tpAfterCapture
             // 
+            this.tpAfterCapture.BackColor = System.Drawing.SystemColors.Window;
             this.tpAfterCapture.Controls.Add(this.lvAfterCaptureTasks);
             resources.ApplyResources(this.tpAfterCapture, "tpAfterCapture");
             this.tpAfterCapture.Name = "tpAfterCapture";
-            this.tpAfterCapture.UseVisualStyleBackColor = true;
             // 
             // lvAfterCaptureTasks
             // 
@@ -98,6 +97,7 @@
             resources.ApplyResources(this.lvAfterCaptureTasks, "lvAfterCaptureTasks");
             this.lvAfterCaptureTasks.FullRowSelect = true;
             this.lvAfterCaptureTasks.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+            this.lvAfterCaptureTasks.HideSelection = false;
             this.lvAfterCaptureTasks.MultiSelect = false;
             this.lvAfterCaptureTasks.Name = "lvAfterCaptureTasks";
             this.lvAfterCaptureTasks.UseCompatibleStateImageBehavior = false;
@@ -107,17 +107,22 @@
             // 
             // tpBeforeUpload
             // 
+            this.tpBeforeUpload.BackColor = System.Drawing.SystemColors.Window;
             this.tpBeforeUpload.Controls.Add(this.ucBeforeUpload);
             resources.ApplyResources(this.tpBeforeUpload, "tpBeforeUpload");
             this.tpBeforeUpload.Name = "tpBeforeUpload";
-            this.tpBeforeUpload.UseVisualStyleBackColor = true;
+            // 
+            // ucBeforeUpload
+            // 
+            resources.ApplyResources(this.ucBeforeUpload, "ucBeforeUpload");
+            this.ucBeforeUpload.Name = "ucBeforeUpload";
             // 
             // tpAfterUpload
             // 
+            this.tpAfterUpload.BackColor = System.Drawing.SystemColors.Window;
             this.tpAfterUpload.Controls.Add(this.lvAfterUploadTasks);
             resources.ApplyResources(this.tpAfterUpload, "tpAfterUpload");
             this.tpAfterUpload.Name = "tpAfterUpload";
-            this.tpAfterUpload.UseVisualStyleBackColor = true;
             // 
             // lvAfterUploadTasks
             // 
@@ -128,6 +133,7 @@
             resources.ApplyResources(this.lvAfterUploadTasks, "lvAfterUploadTasks");
             this.lvAfterUploadTasks.FullRowSelect = true;
             this.lvAfterUploadTasks.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+            this.lvAfterUploadTasks.HideSelection = false;
             this.lvAfterUploadTasks.MultiSelect = false;
             this.lvAfterUploadTasks.Name = "lvAfterUploadTasks";
             this.lvAfterUploadTasks.UseCompatibleStateImageBehavior = false;
@@ -144,6 +150,8 @@
             // 
             resources.ApplyResources(this.txtFileName, "txtFileName");
             this.txtFileName.Name = "txtFileName";
+            this.txtFileName.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtFileName_KeyDown);
+            this.txtFileName.KeyUp += new System.Windows.Forms.KeyEventHandler(this.txtFileName_KeyUp);
             // 
             // pbImage
             // 
@@ -155,18 +163,14 @@
             this.pbImage.EnableRightClickMenu = true;
             this.pbImage.FullscreenOnClick = true;
             this.pbImage.Name = "pbImage";
+            this.pbImage.PictureBoxBackColor = System.Drawing.SystemColors.Window;
             this.pbImage.ShowImageSizeLabel = true;
-            // 
-            // ucBeforeUpload
-            // 
-            resources.ApplyResources(this.ucBeforeUpload, "ucBeforeUpload");
-            this.ucBeforeUpload.Name = "ucBeforeUpload";
             // 
             // AfterCaptureForm
             // 
-            this.AcceptButton = this.btnContinue;
             resources.ApplyResources(this, "$this");
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.SystemColors.Window;
             this.CancelButton = this.btnCancel;
             this.Controls.Add(this.txtFileName);

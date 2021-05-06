@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -190,24 +190,6 @@ namespace ShareX.HelpersLib
         Enable = 1,
         BlurRegion = 2,
         TransitionMaximized = 4
-    }
-
-    [Flags]
-    public enum DwmWindowAttribute
-    {
-        NCRenderingEnabled = 1,
-        NCRenderingPolicy,
-        TransitionsForceDisabled,
-        AllowNCPaint,
-        CaptionButtonBounds,
-        NonClientRtlLayout,
-        ForceIconicRepresentation,
-        Flip3DPolicy,
-        ExtendedFrameBounds,
-        HasIconicBitmap,
-        DisallowPeek,
-        ExcludedFromPeek,
-        Last
     }
 
     [Flags]
@@ -596,7 +578,9 @@ namespace ShareX.HelpersLib
         /// <summary>
         /// Windows XP (v5.1+) This system metric is used in a Terminal Services environment. Its value is nonzero if the current session is remotely controlled; zero otherwise
         /// </summary>
-        SM_REMOTECONTROL = 0x2001
+        SM_REMOTECONTROL = 0x2001,
+        SM_CONVERTIBLESLATEMODE = 0x2003,
+        SM_SYSTEMDOCKED = 0x2004
     }
 
     /// <summary>
@@ -2033,6 +2017,78 @@ namespace ShareX.HelpersLib
         DWM_EC_ENABLECOMPOSITION = 1
     }
 
+    public enum DwmWindowAttribute : uint
+    {
+        /// <summary>
+        /// Use with DwmGetWindowAttribute. Discovers whether non-client rendering is enabled. The retrieved value is of type BOOL. TRUE if non-client rendering is enabled; otherwise, FALSE.
+        /// </summary>
+        DWMWA_NCRENDERING_ENABLED = 1,
+        /// <summary>
+        /// Use with DwmSetWindowAttribute. Sets the non-client rendering policy. The pvAttribute parameter points to a value from the DWMNCRENDERINGPOLICY enumeration.
+        /// </summary>
+        DWMWA_NCRENDERING_POLICY,
+        /// <summary>
+        /// Use with DwmSetWindowAttribute. Enables or forcibly disables DWM transitions. The pvAttribute parameter points to a value of TRUE to disable transitions or FALSE to enable transitions.
+        /// </summary>
+        DWMWA_TRANSITIONS_FORCEDISABLED,
+        /// <summary>
+        /// Use with DwmSetWindowAttribute. Enables content rendered in the non-client area to be visible on the frame drawn by DWM. The pvAttribute parameter points to a value of TRUE to enable content rendered in the non-client area to be visible on the frame; otherwise, it points to FALSE.
+        /// </summary>
+        DWMWA_ALLOW_NCPAINT,
+        /// <summary>
+        /// Use with DwmGetWindowAttribute. Retrieves the bounds of the caption button area in the window-relative space. The retrieved value is of type RECT.
+        /// </summary>
+        DWMWA_CAPTION_BUTTON_BOUNDS,
+        /// <summary>
+        /// Use with DwmSetWindowAttribute. Specifies whether non-client content is right-to-left (RTL) mirrored. The pvAttribute parameter points to a value of TRUE if the non-client content is right-to-left (RTL) mirrored; otherwise, it points to FALSE.
+        /// </summary>
+        DWMWA_NONCLIENT_RTL_LAYOUT,
+        /// <summary>
+        /// Use with DwmSetWindowAttribute. Forces the window to display an iconic thumbnail or peek representation (a static bitmap), even if a live or snapshot representation of the window is available. This value normally is set during a window's creation and not changed throughout the window's lifetime. Some scenarios, however, might require the value to change over time. The pvAttribute parameter points to a value of TRUE to require a iconic thumbnail or peek representation; otherwise, it points to FALSE.
+        /// </summary>
+        DWMWA_FORCE_ICONIC_REPRESENTATION,
+        /// <summary>
+        /// Use with DwmSetWindowAttribute. Sets how Flip3D treats the window. The pvAttribute parameter points to a value from the DWMFLIP3DWINDOWPOLICY enumeration.
+        /// </summary>
+        DWMWA_FLIP3D_POLICY,
+        /// <summary>
+        /// Use with DwmGetWindowAttribute. Retrieves the extended frame bounds rectangle in screen space. The retrieved value is of type RECT.
+        /// </summary>
+        DWMWA_EXTENDED_FRAME_BOUNDS,
+        /// <summary>
+        /// Use with DwmSetWindowAttribute. The window will provide a bitmap for use by DWM as an iconic thumbnail or peek representation (a static bitmap) for the window. DWMWA_HAS_ICONIC_BITMAP can be specified with DWMWA_FORCE_ICONIC_REPRESENTATION. DWMWA_HAS_ICONIC_BITMAP normally is set during a window's creation and not changed throughout the window's lifetime. Some scenarios, however, might require the value to change over time. The pvAttribute parameter points to a value of TRUE to inform DWM that the window will provide an iconic thumbnail or peek representation; otherwise, it points to FALSE.
+        /// </summary>
+        DWMWA_HAS_ICONIC_BITMAP,
+        /// <summary>
+        /// Use with DwmSetWindowAttribute. Do not show peek preview for the window. The peek view shows a full-sized preview of the window when the mouse hovers over the window's thumbnail in the taskbar. If this attribute is set, hovering the mouse pointer over the window's thumbnail dismisses peek (in case another window in the group has a peek preview showing). The pvAttribute parameter points to a value of TRUE to prevent peek functionality or FALSE to allow it.
+        /// </summary>
+        DWMWA_DISALLOW_PEEK,
+        /// <summary>
+        /// Use with DwmSetWindowAttribute. Prevents a window from fading to a glass sheet when peek is invoked. The pvAttribute parameter points to a value of TRUE to prevent the window from fading during another window's peek or FALSE for normal behavior.
+        /// </summary>
+        DWMWA_EXCLUDED_FROM_PEEK,
+        /// <summary>
+        /// Use with DwmSetWindowAttribute. Cloaks the window such that it is not visible to the user. The window is still composed by DWM.
+        /// </summary>
+        DWMWA_CLOAK,
+        /// <summary>
+        /// Use with DwmGetWindowAttribute.
+        /// </summary>
+        DWMWA_CLOAKED,
+        /// <summary>
+        /// Use with DwmSetWindowAttribute. Freeze the window's thumbnail image with its current visuals. Do no further live updates on the thumbnail image to match the window's contents.
+        /// </summary>
+        DWMWA_FREEZE_REPRESENTATION,
+        /// <summary>
+        /// The maximum recognized DWMWINDOWATTRIBUTE value, used for validation purposes.
+        /// </summary>
+        DWMWA_LAST,
+        // Undocumented, available since October 2018 update (build 17763)
+        DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 = 19,
+        // Windows 10 20H1 changed the value of the constant
+        DWMWA_USE_IMMERSIVE_DARK_MODE = 20
+    }
+
     public enum InputType : int
     {
         InputMouse,
@@ -2842,5 +2898,534 @@ namespace ShareX.HelpersLib
         BI_BITFIELDS = 3,
         BI_JPEG = 4,
         BI_PNG = 5
+    }
+
+    /// <summary>
+    /// Describes the event that has occurred.
+    /// Typically, only one event is specified at a time.
+    /// If more than one event is specified, the values contained
+    /// in the <i>dwItem1</i> and <i>dwItem2</i>
+    /// parameters must be the same, respectively, for all specified events.
+    /// This parameter can be one or more of the following values.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Windows NT/2000/XP:</b> <i>dwItem2</i> contains the index
+    /// in the system image list that has changed.
+    /// <i>dwItem1</i> is not used and should be <see langword="null"/>.</para>
+    /// <para><b>Windows 95/98:</b> <i>dwItem1</i> contains the index
+    /// in the system image list that has changed.
+    /// <i>dwItem2</i> is not used and should be <see langword="null"/>.</para>
+    /// </remarks>
+    [Flags]
+    public enum HChangeNotifyEventID
+    {
+        /// <summary>
+        /// All events have occurred.
+        /// </summary>
+        SHCNE_ALLEVENTS = 0x7FFFFFFF,
+
+        /// <summary>
+        /// A file type association has changed. <see cref="HChangeNotifyFlags.SHCNF_IDLIST"/>
+        /// must be specified in the <i>uFlags</i> parameter.
+        /// <i>dwItem1</i> and <i>dwItem2</i> are not used and must be <see langword="null"/>.
+        /// </summary>
+        SHCNE_ASSOCCHANGED = 0x08000000,
+
+        /// <summary>
+        /// The attributes of an item or folder have changed.
+        /// <see cref="HChangeNotifyFlags.SHCNF_IDLIST"/> or
+        /// <see cref="HChangeNotifyFlags.SHCNF_PATH"/> must be specified in <i>uFlags</i>.
+        /// <i>dwItem1</i> contains the item or folder that has changed.
+        /// <i>dwItem2</i> is not used and should be <see langword="null"/>.
+        /// </summary>
+        SHCNE_ATTRIBUTES = 0x00000800,
+
+        /// <summary>
+        /// A nonfolder item has been created.
+        /// <see cref="HChangeNotifyFlags.SHCNF_IDLIST"/> or
+        /// <see cref="HChangeNotifyFlags.SHCNF_PATH"/> must be specified in <i>uFlags</i>.
+        /// <i>dwItem1</i> contains the item that was created.
+        /// <i>dwItem2</i> is not used and should be <see langword="null"/>.
+        /// </summary>
+        SHCNE_CREATE = 0x00000002,
+
+        /// <summary>
+        /// A nonfolder item has been deleted.
+        /// <see cref="HChangeNotifyFlags.SHCNF_IDLIST"/> or
+        /// <see cref="HChangeNotifyFlags.SHCNF_PATH"/> must be specified in <i>uFlags</i>.
+        /// <i>dwItem1</i> contains the item that was deleted.
+        /// <i>dwItem2</i> is not used and should be <see langword="null"/>.
+        /// </summary>
+        SHCNE_DELETE = 0x00000004,
+
+        /// <summary>
+        /// A drive has been added.
+        /// <see cref="HChangeNotifyFlags.SHCNF_IDLIST"/> or
+        /// <see cref="HChangeNotifyFlags.SHCNF_PATH"/> must be specified in <i>uFlags</i>.
+        /// <i>dwItem1</i> contains the root of the drive that was added.
+        /// <i>dwItem2</i> is not used and should be <see langword="null"/>.
+        /// </summary>
+        SHCNE_DRIVEADD = 0x00000100,
+
+        /// <summary>
+        /// A drive has been added and the Shell should create a new window for the drive.
+        /// <see cref="HChangeNotifyFlags.SHCNF_IDLIST"/> or
+        /// <see cref="HChangeNotifyFlags.SHCNF_PATH"/> must be specified in <i>uFlags</i>.
+        /// <i>dwItem1</i> contains the root of the drive that was added.
+        /// <i>dwItem2</i> is not used and should be <see langword="null"/>.
+        /// </summary>
+        SHCNE_DRIVEADDGUI = 0x00010000,
+
+        /// <summary>
+        /// A drive has been removed. <see cref="HChangeNotifyFlags.SHCNF_IDLIST"/> or
+        /// <see cref="HChangeNotifyFlags.SHCNF_PATH"/> must be specified in <i>uFlags</i>.
+        /// <i>dwItem1</i> contains the root of the drive that was removed.
+        /// <i>dwItem2</i> is not used and should be <see langword="null"/>.
+        /// </summary>
+        SHCNE_DRIVEREMOVED = 0x00000080,
+
+        /// <summary>
+        /// Not currently used.
+        /// </summary>
+        SHCNE_EXTENDED_EVENT = 0x04000000,
+
+        /// <summary>
+        /// The amount of free space on a drive has changed.
+        /// <see cref="HChangeNotifyFlags.SHCNF_IDLIST"/> or
+        /// <see cref="HChangeNotifyFlags.SHCNF_PATH"/> must be specified in <i>uFlags</i>.
+        /// <i>dwItem1</i> contains the root of the drive on which the free space changed.
+        /// <i>dwItem2</i> is not used and should be <see langword="null"/>.
+        /// </summary>
+        SHCNE_FREESPACE = 0x00040000,
+
+        /// <summary>
+        /// Storage media has been inserted into a drive.
+        /// <see cref="HChangeNotifyFlags.SHCNF_IDLIST"/> or
+        /// <see cref="HChangeNotifyFlags.SHCNF_PATH"/> must be specified in <i>uFlags</i>.
+        /// <i>dwItem1</i> contains the root of the drive that contains the new media.
+        /// <i>dwItem2</i> is not used and should be <see langword="null"/>.
+        /// </summary>
+        SHCNE_MEDIAINSERTED = 0x00000020,
+
+        /// <summary>
+        /// Storage media has been removed from a drive.
+        /// <see cref="HChangeNotifyFlags.SHCNF_IDLIST"/> or
+        /// <see cref="HChangeNotifyFlags.SHCNF_PATH"/> must be specified in <i>uFlags</i>.
+        /// <i>dwItem1</i> contains the root of the drive from which the media was removed.
+        /// <i>dwItem2</i> is not used and should be <see langword="null"/>.
+        /// </summary>
+        SHCNE_MEDIAREMOVED = 0x00000040,
+
+        /// <summary>
+        /// A folder has been created. <see cref="HChangeNotifyFlags.SHCNF_IDLIST"/>
+        /// or <see cref="HChangeNotifyFlags.SHCNF_PATH"/> must be specified in <i>uFlags</i>.
+        /// <i>dwItem1</i> contains the folder that was created.
+        /// <i>dwItem2</i> is not used and should be <see langword="null"/>.
+        /// </summary>
+        SHCNE_MKDIR = 0x00000008,
+
+        /// <summary>
+        /// A folder on the local computer is being shared via the network.
+        /// <see cref="HChangeNotifyFlags.SHCNF_IDLIST"/> or
+        /// <see cref="HChangeNotifyFlags.SHCNF_PATH"/> must be specified in <i>uFlags</i>.
+        /// <i>dwItem1</i> contains the folder that is being shared.
+        /// <i>dwItem2</i> is not used and should be <see langword="null"/>.
+        /// </summary>
+        SHCNE_NETSHARE = 0x00000200,
+
+        /// <summary>
+        /// A folder on the local computer is no longer being shared via the network.
+        /// <see cref="HChangeNotifyFlags.SHCNF_IDLIST"/> or
+        /// <see cref="HChangeNotifyFlags.SHCNF_PATH"/> must be specified in <i>uFlags</i>.
+        /// <i>dwItem1</i> contains the folder that is no longer being shared.
+        /// <i>dwItem2</i> is not used and should be <see langword="null"/>.
+        /// </summary>
+        SHCNE_NETUNSHARE = 0x00000400,
+
+        /// <summary>
+        /// The name of a folder has changed.
+        /// <see cref="HChangeNotifyFlags.SHCNF_IDLIST"/> or
+        /// <see cref="HChangeNotifyFlags.SHCNF_PATH"/> must be specified in <i>uFlags</i>.
+        /// <i>dwItem1</i> contains the previous pointer to an item identifier list (PIDL) or name of the folder.
+        /// <i>dwItem2</i> contains the new PIDL or name of the folder.
+        /// </summary>
+        SHCNE_RENAMEFOLDER = 0x00020000,
+
+        /// <summary>
+        /// The name of a nonfolder item has changed.
+        /// <see cref="HChangeNotifyFlags.SHCNF_IDLIST"/> or
+        /// <see cref="HChangeNotifyFlags.SHCNF_PATH"/> must be specified in <i>uFlags</i>.
+        /// <i>dwItem1</i> contains the previous PIDL or name of the item.
+        /// <i>dwItem2</i> contains the new PIDL or name of the item.
+        /// </summary>
+        SHCNE_RENAMEITEM = 0x00000001,
+
+        /// <summary>
+        /// A folder has been removed.
+        /// <see cref="HChangeNotifyFlags.SHCNF_IDLIST"/> or
+        /// <see cref="HChangeNotifyFlags.SHCNF_PATH"/> must be specified in <i>uFlags</i>.
+        /// <i>dwItem1</i> contains the folder that was removed.
+        /// <i>dwItem2</i> is not used and should be <see langword="null"/>.
+        /// </summary>
+        SHCNE_RMDIR = 0x00000010,
+
+        /// <summary>
+        /// The computer has disconnected from a server.
+        /// <see cref="HChangeNotifyFlags.SHCNF_IDLIST"/> or
+        /// <see cref="HChangeNotifyFlags.SHCNF_PATH"/> must be specified in <i>uFlags</i>.
+        /// <i>dwItem1</i> contains the server from which the computer was disconnected.
+        /// <i>dwItem2</i> is not used and should be <see langword="null"/>.
+        /// </summary>
+        SHCNE_SERVERDISCONNECT = 0x00004000,
+
+        /// <summary>
+        /// The contents of an existing folder have changed,
+        /// but the folder still exists and has not been renamed.
+        /// <see cref="HChangeNotifyFlags.SHCNF_IDLIST"/> or
+        /// <see cref="HChangeNotifyFlags.SHCNF_PATH"/> must be specified in <i>uFlags</i>.
+        /// <i>dwItem1</i> contains the folder that has changed.
+        /// <i>dwItem2</i> is not used and should be <see langword="null"/>.
+        /// If a folder has been created, deleted, or renamed, use SHCNE_MKDIR, SHCNE_RMDIR, or
+        /// SHCNE_RENAMEFOLDER, respectively, instead.
+        /// </summary>
+        SHCNE_UPDATEDIR = 0x00001000,
+
+        /// <summary>
+        /// An image in the system image list has changed.
+        /// <see cref="HChangeNotifyFlags.SHCNF_DWORD"/> must be specified in <i>uFlags</i>.
+        /// </summary>
+        SHCNE_UPDATEIMAGE = 0x00008000
+    }
+
+    /// <summary>
+    /// Flags that indicate the meaning of the <i>dwItem1</i> and <i>dwItem2</i> parameters.
+    /// The uFlags parameter must be one of the following values.
+    /// </summary>
+    [Flags]
+    public enum HChangeNotifyFlags
+    {
+        /// <summary>
+        /// The <i>dwItem1</i> and <i>dwItem2</i> parameters are DWORD values.
+        /// </summary>
+        SHCNF_DWORD = 0x0003,
+        /// <summary>
+        /// <i>dwItem1</i> and <i>dwItem2</i> are the addresses of ITEMIDLIST structures that
+        /// represent the item(s) affected by the change.
+        /// Each ITEMIDLIST must be relative to the desktop folder.
+        /// </summary>
+        SHCNF_IDLIST = 0x0000,
+        /// <summary>
+        /// <i>dwItem1</i> and <i>dwItem2</i> are the addresses of null-terminated strings of
+        /// maximum length MAX_PATH that contain the full path names
+        /// of the items affected by the change.
+        /// </summary>
+        SHCNF_PATHA = 0x0001,
+        /// <summary>
+        /// <i>dwItem1</i> and <i>dwItem2</i> are the addresses of null-terminated strings of
+        /// maximum length MAX_PATH that contain the full path names
+        /// of the items affected by the change.
+        /// </summary>
+        SHCNF_PATHW = 0x0005,
+        /// <summary>
+        /// <i>dwItem1</i> and <i>dwItem2</i> are the addresses of null-terminated strings that
+        /// represent the friendly names of the printer(s) affected by the change.
+        /// </summary>
+        SHCNF_PRINTERA = 0x0002,
+        /// <summary>
+        /// <i>dwItem1</i> and <i>dwItem2</i> are the addresses of null-terminated strings that
+        /// represent the friendly names of the printer(s) affected by the change.
+        /// </summary>
+        SHCNF_PRINTERW = 0x0006,
+        /// <summary>
+        /// The function should not return until the notification
+        /// has been delivered to all affected components.
+        /// As this flag modifies other data-type flags, it cannot by used by itself.
+        /// </summary>
+        SHCNF_FLUSH = 0x1000,
+        /// <summary>
+        /// The function should begin delivering notifications to all affected components
+        /// but should return as soon as the notification process has begun.
+        /// As this flag modifies other data-type flags, it cannot by used by itself.
+        /// </summary>
+        SHCNF_FLUSHNOWAIT = 0x2000
+    }
+
+    [Flags]
+    public enum CreateProcessFlags : uint
+    {
+        DEBUG_PROCESS = 0x00000001,
+        DEBUG_ONLY_THIS_PROCESS = 0x00000002,
+        CREATE_SUSPENDED = 0x00000004,
+        DETACHED_PROCESS = 0x00000008,
+        CREATE_NEW_CONSOLE = 0x00000010,
+        NORMAL_PRIORITY_CLASS = 0x00000020,
+        IDLE_PRIORITY_CLASS = 0x00000040,
+        HIGH_PRIORITY_CLASS = 0x00000080,
+        REALTIME_PRIORITY_CLASS = 0x00000100,
+        CREATE_NEW_PROCESS_GROUP = 0x00000200,
+        CREATE_UNICODE_ENVIRONMENT = 0x00000400,
+        CREATE_SEPARATE_WOW_VDM = 0x00000800,
+        CREATE_SHARED_WOW_VDM = 0x00001000,
+        CREATE_FORCEDOS = 0x00002000,
+        BELOW_NORMAL_PRIORITY_CLASS = 0x00004000,
+        ABOVE_NORMAL_PRIORITY_CLASS = 0x00008000,
+        INHERIT_PARENT_AFFINITY = 0x00010000,
+        INHERIT_CALLER_PRIORITY = 0x00020000,
+        CREATE_PROTECTED_PROCESS = 0x00040000,
+        EXTENDED_STARTUPINFO_PRESENT = 0x00080000,
+        PROCESS_MODE_BACKGROUND_BEGIN = 0x00100000,
+        PROCESS_MODE_BACKGROUND_END = 0x00200000,
+        CREATE_BREAKAWAY_FROM_JOB = 0x01000000,
+        CREATE_PRESERVE_CODE_AUTHZ_LEVEL = 0x02000000,
+        CREATE_DEFAULT_ERROR_MODE = 0x04000000,
+        CREATE_NO_WINDOW = 0x08000000,
+        PROFILE_USER = 0x10000000,
+        PROFILE_KERNEL = 0x20000000,
+        PROFILE_SERVER = 0x40000000,
+        CREATE_IGNORE_SYSTEM_DEFAULT = 0x80000000,
+    }
+
+    [Flags]
+    public enum RegisterApplicationRestartFlags : uint
+    {
+        /// <summary>
+        /// Do not restart the process if it terminates due to an unhandled exception.
+        /// </summary>
+        RESTART_NO_CRASH = 1,
+        /// <summary>
+        /// Do not restart the process if it terminates due to the application not responding.
+        /// </summary>
+        RESTART_NO_HANG = 2,
+        /// <summary>
+        /// Do not restart the process if it terminates due to the installation of an update.
+        /// </summary>
+        RESTART_NO_PATCH = 4,
+        /// <summary>
+        /// Do not restart the process if the computer is restarted as the result of an update.
+        /// </summary>
+        RESTART_NO_REBOOT = 8
+    }
+
+    [Flags]
+    public enum EndSessionReasons : uint
+    {
+        /// <summary>
+        /// The application is using a file that must be replaced, the system is being serviced, or system resources are exhausted.
+        /// </summary>
+        ENDSESSION_CLOSEAPP = 0x1,
+        /// <summary>
+        /// The application is forced to shut down.
+        /// </summary>
+        ENDSESSION_CRITICAL = 0x40000000,
+        /// <summary>
+        /// The user is logging off.
+        /// </summary>
+        ENDSESSION_LOGOFF = 0x80000000
+    }
+
+    [Flags]
+    public enum SHGFI : uint
+    {
+        /// <summary>get icon</summary>
+        Icon = 0x000000100,
+        /// <summary>get display name</summary>
+        DisplayName = 0x000000200,
+        /// <summary>get type name</summary>
+        TypeName = 0x000000400,
+        /// <summary>get attributes</summary>
+        Attributes = 0x000000800,
+        /// <summary>get icon location</summary>
+        IconLocation = 0x000001000,
+        /// <summary>return exe type</summary>
+        ExeType = 0x000002000,
+        /// <summary>get system icon index</summary>
+        SysIconIndex = 0x000004000,
+        /// <summary>put a link overlay on icon</summary>
+        LinkOverlay = 0x000008000,
+        /// <summary>show icon in selected state</summary>
+        Selected = 0x000010000,
+        /// <summary>get only specified attributes</summary>
+        Attr_Specified = 0x000020000,
+        /// <summary>get large icon</summary>
+        LargeIcon = 0x000000000,
+        /// <summary>get small icon</summary>
+        SmallIcon = 0x000000001,
+        /// <summary>get open icon</summary>
+        OpenIcon = 0x000000002,
+        /// <summary>get shell size icon</summary>
+        ShellIconSize = 0x000000004,
+        /// <summary>pszPath is a pidl</summary>
+        PIDL = 0x000000008,
+        /// <summary>use passed dwFileAttribute</summary>
+        UseFileAttributes = 0x000000010,
+        /// <summary>apply the appropriate overlays</summary>
+        AddOverlays = 0x000000020,
+        /// <summary>Get the index of the overlay in the upper 8 bits of the iIcon</summary>
+        OverlayIndex = 0x000000040
+    }
+
+    public enum DeviceCap
+    {
+        /// <summary>
+        /// Device driver version
+        /// </summary>
+        DRIVERVERSION = 0,
+        /// <summary>
+        /// Device classification
+        /// </summary>
+        TECHNOLOGY = 2,
+        /// <summary>
+        /// Horizontal size in millimeters
+        /// </summary>
+        HORZSIZE = 4,
+        /// <summary>
+        /// Vertical size in millimeters
+        /// </summary>
+        VERTSIZE = 6,
+        /// <summary>
+        /// Horizontal width in pixels
+        /// </summary>
+        HORZRES = 8,
+        /// <summary>
+        /// Vertical height in pixels
+        /// </summary>
+        VERTRES = 10,
+        /// <summary>
+        /// Number of bits per pixel
+        /// </summary>
+        BITSPIXEL = 12,
+        /// <summary>
+        /// Number of planes
+        /// </summary>
+        PLANES = 14,
+        /// <summary>
+        /// Number of brushes the device has
+        /// </summary>
+        NUMBRUSHES = 16,
+        /// <summary>
+        /// Number of pens the device has
+        /// </summary>
+        NUMPENS = 18,
+        /// <summary>
+        /// Number of markers the device has
+        /// </summary>
+        NUMMARKERS = 20,
+        /// <summary>
+        /// Number of fonts the device has
+        /// </summary>
+        NUMFONTS = 22,
+        /// <summary>
+        /// Number of colors the device supports
+        /// </summary>
+        NUMCOLORS = 24,
+        /// <summary>
+        /// Size required for device descriptor
+        /// </summary>
+        PDEVICESIZE = 26,
+        /// <summary>
+        /// Curve capabilities
+        /// </summary>
+        CURVECAPS = 28,
+        /// <summary>
+        /// Line capabilities
+        /// </summary>
+        LINECAPS = 30,
+        /// <summary>
+        /// Polygonal capabilities
+        /// </summary>
+        POLYGONALCAPS = 32,
+        /// <summary>
+        /// Text capabilities
+        /// </summary>
+        TEXTCAPS = 34,
+        /// <summary>
+        /// Clipping capabilities
+        /// </summary>
+        CLIPCAPS = 36,
+        /// <summary>
+        /// Bitblt capabilities
+        /// </summary>
+        RASTERCAPS = 38,
+        /// <summary>
+        /// Length of the X leg
+        /// </summary>
+        ASPECTX = 40,
+        /// <summary>
+        /// Length of the Y leg
+        /// </summary>
+        ASPECTY = 42,
+        /// <summary>
+        /// Length of the hypotenuse
+        /// </summary>
+        ASPECTXY = 44,
+        /// <summary>
+        /// Shading and Blending caps
+        /// </summary>
+        SHADEBLENDCAPS = 45,
+
+        /// <summary>
+        /// Logical pixels inch in X
+        /// </summary>
+        LOGPIXELSX = 88,
+        /// <summary>
+        /// Logical pixels inch in Y
+        /// </summary>
+        LOGPIXELSY = 90,
+
+        /// <summary>
+        /// Number of entries in physical palette
+        /// </summary>
+        SIZEPALETTE = 104,
+        /// <summary>
+        /// Number of reserved entries in palette
+        /// </summary>
+        NUMRESERVED = 106,
+        /// <summary>
+        /// Actual color resolution
+        /// </summary>
+        COLORRES = 108,
+
+        // Printing related DeviceCaps. These replace the appropriate Escapes
+        /// <summary>
+        /// Physical Width in device units
+        /// </summary>
+        PHYSICALWIDTH = 110,
+        /// <summary>
+        /// Physical Height in device units
+        /// </summary>
+        PHYSICALHEIGHT = 111,
+        /// <summary>
+        /// Physical Printable Area x margin
+        /// </summary>
+        PHYSICALOFFSETX = 112,
+        /// <summary>
+        /// Physical Printable Area y margin
+        /// </summary>
+        PHYSICALOFFSETY = 113,
+        /// <summary>
+        /// Scaling factor x
+        /// </summary>
+        SCALINGFACTORX = 114,
+        /// <summary>
+        /// Scaling factor y
+        /// </summary>
+        SCALINGFACTORY = 115,
+
+        /// <summary>
+        /// Current vertical refresh rate of the display device (for displays only) in Hz
+        /// </summary>
+        VREFRESH = 116,
+        /// <summary>
+        /// Vertical height of entire desktop in pixels
+        /// </summary>
+        DESKTOPVERTRES = 117,
+        /// <summary>
+        /// Horizontal width of entire desktop in pixels
+        /// </summary>
+        DESKTOPHORZRES = 118,
+        /// <summary>
+        /// Preferred blt alignment
+        /// </summary>
+        BLTALIGNMENT = 119
     }
 }

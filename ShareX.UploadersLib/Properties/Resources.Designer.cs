@@ -19,7 +19,7 @@ namespace ShareX.UploadersLib.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -81,6 +81,26 @@ namespace ShareX.UploadersLib.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap AzureStorage {
+            get {
+                object obj = ResourceManager.GetObject("AzureStorage", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon BackblazeB2 {
+            get {
+                object obj = ResourceManager.GetObject("BackblazeB2", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
         internal static System.Drawing.Icon Bitly {
@@ -120,21 +140,29 @@ namespace ShareX.UploadersLib.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
-        /// </summary>
-        internal static System.Drawing.Icon CoinURL {
-            get {
-                object obj = ResourceManager.GetObject("CoinURL", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Response parse failed..
         /// </summary>
         internal static string CustomFileUploader_Upload_Response_parse_failed_ {
             get {
                 return ResourceManager.GetString("CustomFileUploader_Upload_Response_parse_failed_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &quot;File form name&quot; must be configured..
+        /// </summary>
+        internal static string CustomUploaderItem_GetFileFormName_FileFormNameMustBeConfigured {
+            get {
+                return ResourceManager.GetString("CustomUploaderItem_GetFileFormName_FileFormNameMustBeConfigured", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &quot;Request URL&quot; must be configured..
+        /// </summary>
+        internal static string CustomUploaderItem_GetRequestURL_RequestURLMustBeConfigured {
+            get {
+                return ResourceManager.GetString("CustomUploaderItem_GetRequestURL_RequestURLMustBeConfigured", resourceCulture);
             }
         }
         
@@ -154,6 +182,34 @@ namespace ShareX.UploadersLib.Properties {
         internal static System.Drawing.Icon Dropbox {
             get {
                 object obj = ResourceManager.GetObject("Dropbox", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Duplicate name not allowed..
+        /// </summary>
+        internal static string DuplicateNameNotAllowed {
+            get {
+                return ResourceManager.GetString("DuplicateNameNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Export failed..
+        /// </summary>
+        internal static string ExportFailed {
+            get {
+                return ResourceManager.GetString("ExportFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon Firebase {
+            get {
+                object obj = ResourceManager.GetObject("Firebase", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -179,39 +235,22 @@ namespace ShareX.UploadersLib.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Connecting to {0}.
-        /// </summary>
-        internal static string FTPClientForm_FTPClientForm_Connecting_to__0_ {
-            get {
-                return ResourceManager.GetString("FTPClientForm_FTPClientForm_Connecting_to__0_", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to ShareX FTP client.
-        /// </summary>
-        internal static string FTPClientForm_FTPClientForm_ShareX_FTP_client {
-            get {
-                return ResourceManager.GetString("FTPClientForm_FTPClientForm_ShareX_FTP_client", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Directory name to create.
-        /// </summary>
-        internal static string FTPClientForm_FTPCreateDirectory_Directory_name_to_create {
-            get {
-                return ResourceManager.GetString("FTPClientForm_FTPCreateDirectory_Directory_name_to_create", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
         internal static System.Drawing.Icon Gett {
             get {
                 object obj = ResourceManager.GetObject("Gett", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Gfycat {
+            get {
+                object obj = ResourceManager.GetObject("Gfycat", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
@@ -238,9 +277,9 @@ namespace ShareX.UploadersLib.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon Google {
+        internal static System.Drawing.Icon GoogleCloud {
             get {
-                object obj = ResourceManager.GetObject("Google", resourceCulture);
+                object obj = ResourceManager.GetObject("GoogleCloud", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -251,6 +290,25 @@ namespace ShareX.UploadersLib.Properties {
         internal static System.Drawing.Icon GoogleDrive {
             get {
                 object obj = ResourceManager.GetObject("GoogleDrive", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to My drive.
+        /// </summary>
+        internal static string GoogleDrive_MyDrive_My_drive {
+            get {
+                return ResourceManager.GetString("GoogleDrive_MyDrive_My_drive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon GooglePhotos {
+            get {
+                object obj = ResourceManager.GetObject("GooglePhotos", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -324,6 +382,16 @@ namespace ShareX.UploadersLib.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Kutt {
+            get {
+                object obj = ResourceManager.GetObject("Kutt", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
         internal static System.Drawing.Icon Lambda {
@@ -334,12 +402,21 @@ namespace ShareX.UploadersLib.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Icon Lithiio {
+        internal static System.Drawing.Bitmap Lithiio {
             get {
                 object obj = ResourceManager.GetObject("Lithiio", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Logged in as {0}..
+        /// </summary>
+        internal static string LoggedInAs0 {
+            get {
+                return ResourceManager.GetString("LoggedInAs0", resourceCulture);
             }
         }
         
@@ -374,39 +451,48 @@ namespace ShareX.UploadersLib.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Icon Minus {
+        internal static System.Drawing.Bitmap navigation_270_button_white {
             get {
-                object obj = ResourceManager.GetObject("Minus", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
+                object obj = ResourceManager.GetObject("navigation_270_button_white", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Status: Logged in..
+        ///   Looks up a localized string similar to Paste verification code here.
         /// </summary>
-        internal static string OAuthControl_Status_Status__Logged_in_ {
+        internal static string OAuthControl_OAuthControl_PasteVerificationCodeHere {
             get {
-                return ResourceManager.GetString("OAuthControl_Status_Status__Logged_in_", resourceCulture);
+                return ResourceManager.GetString("OAuthControl_OAuthControl_PasteVerificationCodeHere", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Status: Login failed..
+        ///   Looks up a localized string similar to Logged in..
         /// </summary>
-        internal static string OAuthControl_Status_Status__Login_failed_ {
+        internal static string OAuthControl_Status_LoggedIn {
             get {
-                return ResourceManager.GetString("OAuthControl_Status_Status__Login_failed_", resourceCulture);
+                return ResourceManager.GetString("OAuthControl_Status_LoggedIn", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Status: Not logged in..
+        ///   Looks up a localized string similar to Login failed..
         /// </summary>
-        internal static string OAuthControl_Status_Status__Not_logged_in_ {
+        internal static string OAuthControl_Status_LoginFailed {
             get {
-                return ResourceManager.GetString("OAuthControl_Status_Status__Not_logged_in_", resourceCulture);
+                return ResourceManager.GetString("OAuthControl_Status_LoginFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not logged in..
+        /// </summary>
+        internal static string OAuthControl_Status_NotLoggedIn {
+            get {
+                return ResourceManager.GetString("OAuthControl_Status_NotLoggedIn", resourceCulture);
             }
         }
         
@@ -469,6 +555,16 @@ namespace ShareX.UploadersLib.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Pastie {
+            get {
+                object obj = ResourceManager.GetObject("Pastie", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
         internal static System.Drawing.Icon Photobucket {
@@ -481,9 +577,9 @@ namespace ShareX.UploadersLib.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon Picasa {
+        internal static System.Drawing.Icon Plik {
             get {
-                object obj = ResourceManager.GetObject("Picasa", resourceCulture);
+                object obj = ResourceManager.GetObject("Plik", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -571,16 +667,6 @@ namespace ShareX.UploadersLib.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon SomeImage {
-            get {
-                object obj = ResourceManager.GetObject("SomeImage", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
-        /// </summary>
         internal static System.Drawing.Icon Streamable {
             get {
                 object obj = ResourceManager.GetObject("Streamable", resourceCulture);
@@ -601,9 +687,9 @@ namespace ShareX.UploadersLib.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon TinyPic {
+        internal static System.Drawing.Icon Teknik {
             get {
-                object obj = ResourceManager.GetObject("TinyPic", resourceCulture);
+                object obj = ResourceManager.GetObject("Teknik", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -628,21 +714,20 @@ namespace ShareX.UploadersLib.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        ///   Looks up a localized string similar to Optional, only used if you didn&apos;t set a bucket when you made the key.
         /// </summary>
-        internal static System.Drawing.Icon Upaste {
+        internal static string txtB2BucketWatermark {
             get {
-                object obj = ResourceManager.GetObject("Upaste", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
+                return ResourceManager.GetString("txtB2BucketWatermark", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon Uplea {
+        internal static System.Drawing.Icon Upaste {
             get {
-                object obj = ResourceManager.GetObject("Uplea", resourceCulture);
+                object obj = ResourceManager.GetObject("Upaste", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -657,12 +742,30 @@ namespace ShareX.UploadersLib.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Login successful but getting account info failed..
+        ///   Looks up a localized string similar to Key file does not exist..
         /// </summary>
-        internal static string UploadersConfigForm_DropboxAuthComplete_Login_successful_but_getting_account_info_failed_ {
+        internal static string UploadersConfigForm_ConnectSFTPAccount_Key_file_not_found {
             get {
-                return ResourceManager.GetString("UploadersConfigForm_DropboxAuthComplete_Login_successful_but_getting_account_info" +
-                        "_failed_", resourceCulture);
+                return ResourceManager.GetString("UploadersConfigForm_ConnectSFTPAccount_Key_file_not_found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &quot;Destination type&quot; must be configured..
+        /// </summary>
+        internal static string UploadersConfigForm_eiCustomUploaders_ExportRequested_DestinationTypeMustBeConfigured {
+            get {
+                return ResourceManager.GetString("UploadersConfigForm_eiCustomUploaders_ExportRequested_DestinationTypeMustBeConfig" +
+                        "ured", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &quot;Request URL&quot; must be configured..
+        /// </summary>
+        internal static string UploadersConfigForm_eiCustomUploaders_ExportRequested_RequestURLMustBeConfigured {
+            get {
+                return ResourceManager.GetString("UploadersConfigForm_eiCustomUploaders_ExportRequested_RequestURLMustBeConfigured", resourceCulture);
             }
         }
         
@@ -672,15 +775,6 @@ namespace ShareX.UploadersLib.Properties {
         internal static string UploadersConfigForm_Error {
             get {
                 return ResourceManager.GetString("UploadersConfigForm_Error", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to FTP client only supports FTP or FTPS..
-        /// </summary>
-        internal static string UploadersConfigForm_FTPOpenClient_FTP_client_only_supports_FTP_or_FTPS_ {
-            get {
-                return ResourceManager.GetString("UploadersConfigForm_FTPOpenClient_FTP_client_only_supports_FTP_or_FTPS_", resourceCulture);
             }
         }
         
@@ -784,24 +878,6 @@ namespace ShareX.UploadersLib.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Logged in as {0}..
-        /// </summary>
-        internal static string UploadersConfigForm_MinusUpdateControls_Logged_in_as__0__ {
-            get {
-                return ResourceManager.GetString("UploadersConfigForm_MinusUpdateControls_Logged_in_as__0__", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Not logged in..
-        /// </summary>
-        internal static string UploadersConfigForm_MinusUpdateControls_Not_logged_in_ {
-            get {
-                return ResourceManager.GetString("UploadersConfigForm_MinusUpdateControls_Not_logged_in_", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Refresh authorization is not supported..
         /// </summary>
         internal static string UploadersConfigForm_oAuthJira_RefreshButtonClicked_Refresh_authorization_is_not_supported_ {
@@ -876,47 +952,20 @@ namespace ShareX.UploadersLib.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Download path:.
+        ///   Looks up a localized string similar to Logged in..
         /// </summary>
-        internal static string UploadersConfigForm_UpdateDropboxStatus_Download_path_ {
+        internal static string UploadersConfigForm_UpdatePastebinStatus_LoggedIn {
             get {
-                return ResourceManager.GetString("UploadersConfigForm_UpdateDropboxStatus_Download_path_", resourceCulture);
+                return ResourceManager.GetString("UploadersConfigForm_UpdatePastebinStatus_LoggedIn", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Email:.
+        ///   Looks up a localized string similar to Not logged in..
         /// </summary>
-        internal static string UploadersConfigForm_UpdateDropboxStatus_Email_ {
+        internal static string UploadersConfigForm_UpdatePastebinStatus_NotLoggedIn {
             get {
-                return ResourceManager.GetString("UploadersConfigForm_UpdateDropboxStatus_Email_", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Name:.
-        /// </summary>
-        internal static string UploadersConfigForm_UpdateDropboxStatus_Name_ {
-            get {
-                return ResourceManager.GetString("UploadersConfigForm_UpdateDropboxStatus_Name_", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Upload path:.
-        /// </summary>
-        internal static string UploadersConfigForm_UpdateDropboxStatus_Upload_path_ {
-            get {
-                return ResourceManager.GetString("UploadersConfigForm_UpdateDropboxStatus_Upload_path_", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to User ID:.
-        /// </summary>
-        internal static string UploadersConfigForm_UpdateDropboxStatus_User_ID_ {
-            get {
-                return ResourceManager.GetString("UploadersConfigForm_UpdateDropboxStatus_User_ID_", resourceCulture);
+                return ResourceManager.GetString("UploadersConfigForm_UpdatePastebinStatus_NotLoggedIn", resourceCulture);
             }
         }
         
@@ -937,6 +986,26 @@ namespace ShareX.UploadersLib.Properties {
             get {
                 object obj = ResourceManager.GetObject("Yourls", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon YouTube {
+            get {
+                object obj = ResourceManager.GetObject("YouTube", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ZeroWidthShortener {
+            get {
+                object obj = ResourceManager.GetObject("ZeroWidthShortener", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }

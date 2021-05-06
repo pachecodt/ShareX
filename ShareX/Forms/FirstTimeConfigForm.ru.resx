@@ -127,13 +127,13 @@
     <value>Показывать ShareX в меню "Отправить"</value>
   </data>
   <data name="cbShellContextMenuButton.Text" xml:space="preserve">
-    <value>Показывать кнопку "Загрузить с помощью ShareX" в контекстном меню</value>
+    <value>Показывать пункт "Загрузить с помощью ShareX" в контекстном меню проводника Windows</value>
   </data>
   <data name="cbSteamInApp.Text" xml:space="preserve">
     <value>Пока ShareX открыт, показывать в Steam статус "В приложении"</value>
   </data>
   <data name="lblNote.Text" xml:space="preserve">
-    <value>Эти настройки можно найти в "Настройки приложения -&gt; раздел Интеграция"</value>
+    <value>Эти настройки можно найти в "Настройки приложения -&gt; раздел Интеграция".</value>
   </data>
   <data name="lblTitle.Text" xml:space="preserve">
     <value>Настройка ShareX при первом запуске</value>

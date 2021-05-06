@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -34,6 +34,14 @@ namespace ShareX.HelpersLib
         Image,
         Text,
         URL
+    }
+
+    public enum PNGBitDepth // Localized
+    {
+        Default,
+        Automatic,
+        Bit32,
+        Bit24
     }
 
     public enum GIFQuality // Localized
@@ -71,20 +79,7 @@ namespace ShareX.HelpersLib
         [Description("SHA-384")]
         SHA384,
         [Description("SHA-512")]
-        SHA512,
-        [Description("RIPEMD-160")]
-        RIPEMD160
-    }
-
-    public enum TokenType
-    {
-        Unknown,
-        Whitespace,
-        Symbol,
-        Literal,
-        Identifier,
-        Numeric,
-        Keyword
+        SHA512
     }
 
     public enum BorderType
@@ -170,5 +165,51 @@ namespace ShareX.HelpersLib
     {
         VerticalLines,
         HorizontalLines
+    }
+
+    public enum HotkeyStatus
+    {
+        Registered,
+        Failed,
+        NotConfigured
+    }
+
+    public enum ImageCombinerAlignment
+    {
+        LeftOrTop,
+        Center,
+        RightOrBottom
+    }
+
+    public enum ImageInterpolationMode
+    {
+        HighQualityBicubic,
+        Bicubic,
+        HighQualityBilinear,
+        Bilinear,
+        NearestNeighbor
+    }
+
+    public enum ArrowHeadDirection // Localized
+    {
+        End,
+        Start,
+        Both
+    }
+
+    public enum FFmpegArchitecture
+    {
+        win64,
+        win32,
+        macos64
+    }
+
+    public enum StepType // Localized
+    {
+        Numbers,
+        LettersUppercase,
+        LettersLowercase,
+        RomanNumeralsUppercase,
+        RomanNumeralsLowercase
     }
 }

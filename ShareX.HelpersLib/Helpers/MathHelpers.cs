@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -33,23 +33,61 @@ namespace ShareX.HelpersLib
         public const float DegreePI = 0.01745329f; // Math.PI / 180.0
         public const float TwoPI = 6.28319f; // Math.PI * 2
 
-        private static readonly object randomLock = new object();
-        private static readonly Random random = new Random();
-
-        public static int Random(int max)
+        public static T Min<T>(T num, T min) where T : IComparable<T>
         {
-            lock (randomLock)
-            {
-                return random.Next(max + 1);
-            }
+            if (num.CompareTo(min) > 0) return min;
+            return num;
         }
 
-        public static int Random(int min, int max)
+        public static T Max<T>(T num, T max) where T : IComparable<T>
         {
-            lock (randomLock)
-            {
-                return random.Next(min, max + 1);
-            }
+            if (num.CompareTo(max) < 0) return max;
+            return num;
+        }
+
+        public static T Clamp<T>(T num, T min, T max) where T : IComparable<T>
+        {
+            if (num.CompareTo(min) <= 0) return min;
+            if (num.CompareTo(max) >= 0) return max;
+            return num;
+        }
+
+        public static bool IsBetween<T>(T num, T min, T max) where T : IComparable<T>
+        {
+            return num.CompareTo(min) >= 0 && num.CompareTo(max) <= 0;
+        }
+
+        public static T BetweenOrDefault<T>(T num, T min, T max, T defaultValue = default(T)) where T : IComparable<T>
+        {
+            if (num.CompareTo(min) >= 0 && num.CompareTo(max) <= 0) return num;
+            return defaultValue;
+        }
+
+        public static float Remap(float value, float from1, float to1, float from2, float to2)
+        {
+            return ((value - from1) / (to1 - from1) * (to2 - from2)) + from2;
+        }
+
+        public static bool IsEvenNumber(int num)
+        {
+            return num % 2 == 0;
+        }
+
+        public static bool IsOddNumber(int num)
+        {
+            return num % 2 != 0;
+        }
+
+        public static float Lerp(float value1, float value2, float amount)
+        {
+            return value1 + ((value2 - value1) * amount);
+        }
+
+        public static Vector2 Lerp(Vector2 pos1, Vector2 pos2, float amount)
+        {
+            float x = Lerp(pos1.X, pos2.X, amount);
+            float y = Lerp(pos1.Y, pos2.Y, amount);
+            return new Vector2(x, y);
         }
 
         public static float RadianToDegree(float radian)
@@ -110,11 +148,6 @@ namespace ShareX.HelpersLib
         public static float Distance(Vector2 pos1, Vector2 pos2)
         {
             return (float)Math.Sqrt(Math.Pow(pos2.X - pos1.X, 2) + Math.Pow(pos2.Y - pos1.Y, 2));
-        }
-
-        public static float Lerp(float value1, float value2, float amount)
-        {
-            return value1 + (value2 - value1) * amount;
         }
     }
 }

@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -42,7 +42,7 @@ namespace ShareX.UploadersLib
             using (OpenFileDialog dlg = new OpenFileDialog())
             {
                 dlg.Title = Resources.KeyFileNameEditor_EditValue_Browse_for_a_key_file___;
-                dlg.Filter = "Keyfile (*.*)|*.*";
+                dlg.Filter = "Key file (*.*)|*.*";
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
                     value = dlg.FileName;

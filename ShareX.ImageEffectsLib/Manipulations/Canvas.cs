@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -24,42 +24,64 @@
 #endregion License Information (GPL v3)
 
 using ShareX.HelpersLib;
+using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.Drawing.Design;
 using System.Windows.Forms;
 
 namespace ShareX.ImageEffectsLib
 {
     internal class Canvas : ImageEffect
     {
-        private Padding margin;
-
         [DefaultValue(typeof(Padding), "0, 0, 0, 0")]
-        public Padding Margin
-        {
-            get
-            {
-                return margin;
-            }
-            set
-            {
-                if (value.Top >= 0 && value.Right >= 0 && value.Bottom >= 0 && value.Left >= 0)
-                {
-                    margin = value;
-                }
-            }
-        }
+        public Padding Margin { get; set; }
+
+        [DefaultValue(CanvasMarginMode.AbsoluteSize), Description("How the margin around the canvas will be calculated."), TypeConverter(typeof(EnumDescriptionConverter))]
+        public CanvasMarginMode MarginMode { get; set; }
+
+        [DefaultValue(typeof(Color), "Transparent"), Editor(typeof(MyColorEditor), typeof(UITypeEditor)), TypeConverter(typeof(MyColorConverter))]
+        public Color Color { get; set; }
 
         public Canvas()
         {
             this.ApplyDefaultPropertyValues();
         }
 
-        public override Image Apply(Image img)
+        public enum CanvasMarginMode
         {
-            if (Margin.All == 0) return img;
+            AbsoluteSize,
+            PercentageOfCanvas
+        }
 
-            return ImageHelpers.AddCanvas(img, Margin);
+        public override Bitmap Apply(Bitmap bmp)
+        {
+            Padding canvasMargin;
+
+            if (MarginMode == CanvasMarginMode.PercentageOfCanvas)
+            {
+                // Calculate the amount of padding to add to the sides, based on canvas size.
+                canvasMargin = new Padding();
+                canvasMargin.Top = (int)Math.Round(Margin.Top / 100f * bmp.Height);
+                canvasMargin.Bottom = (int)Math.Round(Margin.Bottom / 100f * bmp.Height);
+                canvasMargin.Left = (int)Math.Round(Margin.Left / 100f * bmp.Width);
+                canvasMargin.Right = (int)Math.Round(Margin.Right / 100f * bmp.Width);
+            }
+            else
+            {
+                // Use the margin as is (absolute size)
+                canvasMargin = Margin;
+            }
+
+            Bitmap bmpResult = ImageHelpers.AddCanvas(bmp, canvasMargin, Color);
+
+            if (bmpResult == null)
+            {
+                return bmp;
+            }
+
+            bmp.Dispose();
+            return bmpResult;
         }
     }
 }

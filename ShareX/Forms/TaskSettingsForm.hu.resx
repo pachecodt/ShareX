@@ -117,15 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="cbUseDefaultAfterCaptureSettings.Text" xml:space="preserve">
-    <value>Alapértelmezett "Képlopás után" beállítások használata</value>
-  </data>
-  <data name="cbUseDefaultAfterUploadSettings.Text" xml:space="preserve">
-    <value>Alapértelmezett "Feltöltés után" beállítások használata</value>
-  </data>
-  <data name="cbUseDefaultDestinationSettings.Text" xml:space="preserve">
-    <value>Alapértelmezett "Cél" beállítások használata</value>
-  </data>
   <data name="lblDescription.Text" xml:space="preserve">
     <value>Leírás:</value>
   </data>
@@ -159,12 +150,6 @@
   <data name="cbCaptureClientArea.Text" xml:space="preserve">
     <value>A kliens terület rögzítése ablakos vagy aktív ablakos képlopáskor</value>
   </data>
-  <data name="cbScreenshotDelay.Text" xml:space="preserve">
-    <value>Képlopás késleltetés:</value>
-  </data>
-  <data name="chkUseDefaultCaptureSettings.Text" xml:space="preserve">
-    <value>Képlopás beállítások használata a főablak feladat beállításainál</value>
-  </data>
   <data name="tpRegionCapture.Text" xml:space="preserve">
     <value>Régió képlopás</value>
   </data>
@@ -189,9 +174,6 @@
   <data name="$this.Text" xml:space="preserve">
     <value>ShareX - Feladat beállítások</value>
   </data>
-  <data name="chkUseDefaultAdvancedSettings.Text" xml:space="preserve">
-    <value>Haladó beállítások használata a főablak feladat beállításainál</value>
-  </data>
   <data name="btnWatchFolderAdd.Text" xml:space="preserve">
     <value>Hozzáadás...</value>
   </data>
@@ -209,9 +191,6 @@
   </data>
   <data name="cbWatchFolderEnabled.Text" xml:space="preserve">
     <value>Amikor egy új fájlt hozunk létre egy figyelt mappában, töltsük azt fel</value>
-  </data>
-  <data name="chkUseDefaultActions.Text" xml:space="preserve">
-    <value>Események használata a főablak feladat beállításainál</value>
   </data>
   <data name="btnActionsRemove.Text" xml:space="preserve">
     <value>Eltávolítás</value>
@@ -243,9 +222,6 @@
   <data name="cbClipboardUploadAutoIndexFolder.Text" xml:space="preserve">
     <value>Ha a vágólap egy mappa elérési útját tartalmazza, indexeljük a mappát és töltsük fel az indexet</value>
   </data>
-  <data name="chkClipboardUploadURLContents.Text" xml:space="preserve">
-    <value>Ha a vágólap egy fájl URL-jét tartalmazza, töltsük le majd fel</value>
-  </data>
   <data name="cbClipboardUploadShareURL.Text" xml:space="preserve">
     <value>Ha a vágólap URL-t tartalmaz, osszuk meg egy URL megosztó szolgáltatással</value>
   </data>
@@ -258,9 +234,6 @@
   <data name="cbFileUploadUseNamePattern.Text" xml:space="preserve">
     <value>Név szabvány használata a fájl feltöltésekhez is, a jelenlegi fájlnév helyett</value>
   </data>
-  <data name="btnResetAutoIncrementNumber.Text" xml:space="preserve">
-    <value>Automatikusan növekvő szám nullázása</value>
-  </data>
   <data name="lblNameFormatPatternPreviewActiveWindow.Text" xml:space="preserve">
     <value>Előnézet:</value>
   </data>
@@ -270,20 +243,11 @@
   <data name="lblNameFormatPatternPreview.Text" xml:space="preserve">
     <value>Előnézet:</value>
   </data>
-  <data name="chkUseDefaultUploadSettings.Text" xml:space="preserve">
-    <value>Feltöltési beállítások használata a főablak feladat beállításainál</value>
-  </data>
   <data name="lblGIFFPS.Text" xml:space="preserve">
     <value>GIF FPS:</value>
   </data>
   <data name="cbScreenRecorderFixedDuration.Text" xml:space="preserve">
     <value>Fix hossz:</value>
-  </data>
-  <data name="btnEncoderConfig.Text" xml:space="preserve">
-    <value>Profilok...</value>
-  </data>
-  <data name="chkRunScreencastCLI.Text" xml:space="preserve">
-    <value>CLI futtatása utólag:</value>
   </data>
   <data name="lblScreenRecordFPS.Text" xml:space="preserve">
     <value>Képernyő felvétel FPS:</value>
@@ -330,9 +294,6 @@
   <data name="tpEffects.Text" xml:space="preserve">
     <value>Effektek</value>
   </data>
-  <data name="chkUseDefaultImageSettings.Text" xml:space="preserve">
-    <value>Kép beállítások használata a főablak feladat beállításainál</value>
-  </data>
   <data name="lblImageJPEGQuality.Text" xml:space="preserve">
     <value>JPEG minőség:</value>
   </data>
@@ -344,9 +305,6 @@
   </data>
   <data name="lblImageFormat.Text" xml:space="preserve">
     <value>Kép formátum:</value>
-  </data>
-  <data name="chkUseDefaultGeneralSettings.Text" xml:space="preserve">
-    <value>Általános beállítások használata a főablak feladat beállításainál</value>
   </data>
   <data name="cbPlaySoundAfterCapture.Text" xml:space="preserve">
     <value>Hang lejátszása a képlopás végeztével</value>

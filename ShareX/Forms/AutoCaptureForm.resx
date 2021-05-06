@@ -288,7 +288,7 @@
     <value>16, 131</value>
   </data>
   <data name="nudRepeatTime.Size" type="System.Drawing.Size, System.Drawing">
-    <value>64, 20</value>
+    <value>72, 20</value>
   </data>
   <data name="nudRepeatTime.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -346,7 +346,7 @@
     <value>True</value>
   </data>
   <data name="lblDurationSeconds.Location" type="System.Drawing.Point, System.Drawing">
-    <value>88, 135</value>
+    <value>96, 135</value>
   </data>
   <data name="lblDurationSeconds.Size" type="System.Drawing.Size, System.Drawing">
     <value>47, 13</value>

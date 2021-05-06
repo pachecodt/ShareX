@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -25,42 +25,49 @@
 
 using System;
 using System.Drawing;
-using System.IO;
 using System.Windows.Forms;
 
 namespace ShareX.HelpersLib
 {
     public class ImageViewer : Form
     {
-        private Image screenshot;
+        private Image image;
 
-        private ImageViewer(Image image)
+        private ImageViewer(Image img)
         {
-            screenshot = image;
+            image = img;
+
             InitializeComponent();
-            Icon = ShareXResources.Icon;
+            ShareXResources.ApplyTheme(this);
         }
 
         public static void ShowImage(Image img)
         {
             if (img != null)
             {
-                using (Image tempImage = (Image)img.Clone())
-                using (ImageViewer viewer = new ImageViewer(tempImage))
+                using (Image tempImage = img.CloneSafe())
                 {
-                    viewer.ShowDialog();
+                    if (tempImage != null)
+                    {
+                        using (ImageViewer viewer = new ImageViewer(tempImage))
+                        {
+                            viewer.ShowDialog();
+                        }
+                    }
                 }
             }
         }
 
-        public static void ShowImage(string filepath)
+        public static void ShowImage(string filePath)
         {
-            if (!string.IsNullOrEmpty(filepath) && File.Exists(filepath))
+            using (Bitmap bmp = ImageHelpers.LoadImage(filePath))
             {
-                using (Image img = ImageHelpers.LoadImage(filepath))
-                using (ImageViewer viewer = new ImageViewer(img))
+                if (bmp != null)
                 {
-                    viewer.ShowDialog();
+                    using (ImageViewer viewer = new ImageViewer(bmp))
+                    {
+                        viewer.ShowDialog();
+                    }
                 }
             }
         }
@@ -106,9 +113,9 @@ namespace ShareX.HelpersLib
                 components.Dispose();
             }
 
-            if (screenshot != null)
+            if (image != null)
             {
-                screenshot.Dispose();
+                image.Dispose();
             }
 
             base.Dispose(disposing);
@@ -120,34 +127,36 @@ namespace ShareX.HelpersLib
         /// </summary>
         private void InitializeComponent()
         {
-            this.pbPreview = new MyPictureBox();
-            this.SuspendLayout();
+            pbPreview = new MyPictureBox();
+            SuspendLayout();
 
-            this.BackColor = SystemColors.Window;
-            this.Bounds = CaptureHelpers.GetScreenBounds();
-            this.DoubleBuffered = true;
-            this.FormBorderStyle = FormBorderStyle.None;
-            this.Text = "ShareX - Image viewer";
-            this.TopMost = true;
-            this.WindowState = FormWindowState.Maximized;
+            BackColor = SystemColors.Window;
+            Bounds = CaptureHelpers.GetActiveScreenBounds();
+            DoubleBuffered = true;
+            FormBorderStyle = FormBorderStyle.None;
+            Text = "ShareX - Image viewer";
+            TopMost = true;
+            WindowState = FormWindowState.Normal;
+            StartPosition = FormStartPosition.Manual;
 
-            this.pbPreview.Cursor = Cursors.Hand;
-            this.pbPreview.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pbPreview.DrawCheckeredBackground = true;
-            this.pbPreview.FullscreenOnClick = false;
-            this.pbPreview.Location = new System.Drawing.Point(0, 0);
-            this.pbPreview.Name = "pbPreview";
-            this.pbPreview.Size = new System.Drawing.Size(96, 100);
-            this.pbPreview.TabIndex = 0;
-            this.pbPreview.LoadImage(screenshot);
-            this.Controls.Add(this.pbPreview);
+            pbPreview.Cursor = Cursors.Hand;
+            pbPreview.Dock = DockStyle.Fill;
+            pbPreview.DrawCheckeredBackground = true;
+            pbPreview.FullscreenOnClick = false;
+            pbPreview.Location = new Point(0, 0);
+            pbPreview.Name = "pbPreview";
+            pbPreview.ShowImageSizeLabel = true;
+            pbPreview.Size = new Size(96, 100);
+            pbPreview.TabIndex = 0;
+            pbPreview.LoadImage(image);
+            Controls.Add(pbPreview);
 
-            this.Shown += new System.EventHandler(this.ShowScreenshot_Shown);
-            this.Deactivate += new System.EventHandler(this.ShowScreenshot_Deactivate);
+            Shown += new EventHandler(ShowScreenshot_Shown);
+            Deactivate += new EventHandler(ShowScreenshot_Deactivate);
             pbPreview.MouseDown += pbPreview_MouseDown;
             pbPreview.KeyDown += pbPreview_KeyDown;
 
-            this.ResumeLayout(false);
+            ResumeLayout(false);
         }
 
         private MyPictureBox pbPreview;

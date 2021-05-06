@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -58,22 +58,22 @@ namespace ShareX.UploadersLib
             set
             {
                 status = value;
+                UpdateStatusLabel();
+            }
+        }
 
-                switch (status)
-                {
-                    case OAuthLoginStatus.LoginRequired:
-                        lblLoginStatus.Text = Resources.OAuthControl_Status_Status__Not_logged_in_;
-                        break;
-                    case OAuthLoginStatus.LoginSuccessful:
-                        lblLoginStatus.Text = Resources.OAuthControl_Status_Status__Logged_in_;
-                        break;
-                    case OAuthLoginStatus.LoginFailed:
-                        lblLoginStatus.Text = Resources.OAuthControl_Status_Status__Login_failed_;
-                        break;
-                }
+        private OAuthUserInfo userInfo;
 
-                txtVerificationCode.ResetText();
-                btnClearAuthorization.Enabled = btnRefreshAuthorization.Enabled = status == OAuthLoginStatus.LoginSuccessful;
+        public OAuthUserInfo UserInfo
+        {
+            get
+            {
+                return userInfo;
+            }
+            set
+            {
+                userInfo = value;
+                UpdateStatusLabel();
             }
         }
 
@@ -112,7 +112,7 @@ namespace ShareX.UploadersLib
             defaultGroupBoxSize = gbUserAccount.Size;
             smallGroupBoxSize = new Size(defaultGroupBoxSize.Width, (int)(defaultGroupBoxSize.Height / 1.16f));
             IsRefreshable = true;
-            txtVerificationCode.HandleCreated += (sender, e) => txtVerificationCode.SetWatermark("Paste verification code here");
+            txtVerificationCode.HandleCreated += (sender, e) => txtVerificationCode.SetWatermark(Resources.OAuthControl_OAuthControl_PasteVerificationCodeHere);
         }
 
         private void btnOpenAuthorizePage_Click(object sender, EventArgs e)
@@ -148,12 +148,42 @@ namespace ShareX.UploadersLib
 
         private void btnClearAuthorization_Click(object sender, EventArgs e)
         {
+            UserInfo = null;
+            Status = OAuthLoginStatus.LoginRequired;
+
             if (ClearButtonClicked != null)
             {
                 ClearButtonClicked();
-
-                Status = OAuthLoginStatus.LoginRequired;
             }
+        }
+
+        private void UpdateStatusLabel()
+        {
+            switch (Status)
+            {
+                case OAuthLoginStatus.LoginRequired:
+                    lblStatusValue.Text = Resources.OAuthControl_Status_NotLoggedIn;
+                    lblStatusValue.ForeColor = Color.FromArgb(200, 0, 0);
+                    break;
+                case OAuthLoginStatus.LoginSuccessful:
+                    if (UserInfo != null && !string.IsNullOrEmpty(UserInfo.name))
+                    {
+                        lblStatusValue.Text = string.Format(Resources.LoggedInAs0, UserInfo.name);
+                    }
+                    else
+                    {
+                        lblStatusValue.Text = Resources.OAuthControl_Status_LoggedIn;
+                    }
+                    lblStatusValue.ForeColor = Color.FromArgb(0, 160, 0);
+                    break;
+                case OAuthLoginStatus.LoginFailed:
+                    lblStatusValue.Text = Resources.OAuthControl_Status_LoginFailed;
+                    lblStatusValue.ForeColor = Color.FromArgb(200, 0, 0);
+                    break;
+            }
+
+            txtVerificationCode.ResetText();
+            btnClearAuthorization.Enabled = btnRefreshAuthorization.Enabled = Status == OAuthLoginStatus.LoginSuccessful;
         }
     }
 }

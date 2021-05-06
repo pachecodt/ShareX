@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.HelpersLib;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
@@ -34,21 +35,45 @@ namespace ShareX.ScreenCaptureLib
 
         public override void OnDraw(Graphics g)
         {
-            g.SmoothingMode = SmoothingMode.HighQuality;
+            DrawEllipse(g);
+        }
 
-            if (FillColor.A > 0)
+        protected void DrawEllipse(Graphics g)
+        {
+            if (Shadow)
             {
-                using (Brush brush = new SolidBrush(FillColor))
+                if (IsBorderVisible)
                 {
-                    g.FillEllipse(brush, Rectangle);
+                    DrawEllipse(g, ShadowColor, BorderSize, BorderStyle, Color.Transparent, Rectangle.LocationOffset(ShadowOffset));
+                }
+                else if (FillColor.A == 255)
+                {
+                    DrawEllipse(g, Color.Transparent, 0, BorderStyle, ShadowColor, Rectangle.LocationOffset(ShadowOffset));
                 }
             }
 
-            if (BorderSize > 0 && BorderColor.A > 0)
+            DrawEllipse(g, BorderColor, BorderSize, BorderStyle, FillColor, Rectangle);
+        }
+
+        protected void DrawEllipse(Graphics g, Color borderColor, int borderSize, BorderStyle borderStyle, Color fillColor, Rectangle rect)
+        {
+            g.SmoothingMode = SmoothingMode.HighQuality;
+
+            if (fillColor.A > 0)
             {
-                using (Pen pen = new Pen(BorderColor, BorderSize))
+                using (Brush brush = new SolidBrush(fillColor))
                 {
-                    g.DrawEllipse(pen, Rectangle);
+                    g.FillEllipse(brush, rect);
+                }
+            }
+
+            if (borderSize > 0 && borderColor.A > 0)
+            {
+                using (Pen pen = new Pen(borderColor, borderSize))
+                {
+                    pen.DashStyle = (DashStyle)borderStyle;
+
+                    g.DrawEllipse(pen, rect);
                 }
             }
 

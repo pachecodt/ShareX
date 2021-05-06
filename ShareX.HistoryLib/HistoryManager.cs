@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -27,36 +27,35 @@ using ShareX.HelpersLib;
 using ShareX.HistoryLib.Properties;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace ShareX.HistoryLib
 {
-    public class HistoryManager
+    public abstract class HistoryManager
     {
-        private XMLManager manager;
+        public string FilePath { get; private set; }
+        public string BackupFolder { get; set; }
+        public bool CreateBackup { get; set; }
+        public bool CreateWeeklyBackup { get; set; }
 
-        public HistoryManager(string historyPath)
+        public HistoryManager(string filePath)
         {
-            manager = new XMLManager(historyPath);
-        }
-
-        private bool IsValidHistoryItem(HistoryItem historyItem)
-        {
-            return historyItem != null && !string.IsNullOrEmpty(historyItem.Filename) && historyItem.DateTime != DateTime.MinValue &&
-                (!string.IsNullOrEmpty(historyItem.URL) || !string.IsNullOrEmpty(historyItem.Filepath));
+            FilePath = filePath;
         }
 
         public List<HistoryItem> GetHistoryItems()
         {
             try
             {
-                return manager.Load();
+                return Load();
             }
             catch (Exception e)
             {
                 DebugHelper.WriteException(e);
 
-                MessageBox.Show(string.Format(Resources.HistoryManager_GetHistoryItems_Error_occured_while_reading_XML_file___0_, manager.FilePath) + "\r\n\r\n" + e,
+                MessageBox.Show(Resources.ErrorOccuredWhileReadingHistoryFile + " " + FilePath + "\r\n\r\n" + e,
                     "ShareX - " + Resources.HistoryManager_GetHistoryItems_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
@@ -65,12 +64,14 @@ namespace ShareX.HistoryLib
 
         public bool AppendHistoryItem(HistoryItem historyItem)
         {
+            return AppendHistoryItems(new HistoryItem[] { historyItem });
+        }
+
+        public bool AppendHistoryItems(IEnumerable<HistoryItem> historyItems)
+        {
             try
             {
-                if (IsValidHistoryItem(historyItem))
-                {
-                    return manager.Append(historyItem);
-                }
+                return Append(historyItems.Where(x => IsValidHistoryItem(x)));
             }
             catch (Exception e)
             {
@@ -80,13 +81,79 @@ namespace ShareX.HistoryLib
             return false;
         }
 
-        public static void AddHistoryItemAsync(string historyPath, HistoryItem historyItem)
+        private bool IsValidHistoryItem(HistoryItem historyItem)
         {
-            TaskEx.Run(() =>
+            return historyItem != null && !string.IsNullOrEmpty(historyItem.FileName) && historyItem.DateTime != DateTime.MinValue &&
+                (!string.IsNullOrEmpty(historyItem.URL) || !string.IsNullOrEmpty(historyItem.FilePath));
+        }
+
+        protected List<HistoryItem> Load()
+        {
+            return Load(FilePath);
+        }
+
+        protected abstract List<HistoryItem> Load(string filePath);
+
+        protected bool Append(IEnumerable<HistoryItem> historyItems)
+        {
+            return Append(FilePath, historyItems);
+        }
+
+        protected abstract bool Append(string filePath, IEnumerable<HistoryItem> historyItems);
+
+        protected void Backup(string filePath)
+        {
+            if (!string.IsNullOrEmpty(BackupFolder))
             {
-                HistoryManager history = new HistoryManager(historyPath);
-                history.AppendHistoryItem(historyItem);
-            });
+                if (CreateBackup)
+                {
+                    Helpers.CopyFile(filePath, BackupFolder);
+                }
+
+                if (CreateWeeklyBackup)
+                {
+                    Helpers.BackupFileWeekly(filePath, BackupFolder);
+                }
+            }
+        }
+
+        public void Test(int itemCount)
+        {
+            Test(FilePath, itemCount);
+        }
+
+        public void Test(string filePath, int itemCount)
+        {
+            HistoryItem historyItem = new HistoryItem()
+            {
+                FileName = "Example.png",
+                FilePath = @"C:\ShareX\Screenshots\Example.png",
+                DateTime = DateTime.Now,
+                Type = "Image",
+                Host = "Imgur",
+                URL = "https://example.com/Example.png",
+                ThumbnailURL = "https://example.com/Example.png",
+                DeletionURL = "https://example.com/Example.png",
+                ShortenedURL = "https://example.com/Example.png"
+            };
+
+            HistoryItem[] historyItems = new HistoryItem[itemCount];
+            for (int i = 0; i < itemCount; i++)
+            {
+                historyItems[i] = historyItem;
+            }
+
+            Thread.Sleep(1000);
+
+            DebugTimer saveTimer = new DebugTimer($"Saved {itemCount} items");
+            Append(filePath, historyItems);
+            saveTimer.WriteElapsedMilliseconds();
+
+            Thread.Sleep(1000);
+
+            DebugTimer loadTimer = new DebugTimer($"Loaded {itemCount} items");
+            Load(filePath);
+            loadTimer.WriteElapsedMilliseconds();
         }
     }
 }

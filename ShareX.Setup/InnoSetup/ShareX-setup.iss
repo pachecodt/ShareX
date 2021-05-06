@@ -1,131 +1,131 @@
-#define AppName "ShareX"
-#define AppFilename "ShareX.exe"
-#define RootDirectory "..\.."
-#define AppParentDirectory RootDirectory + "\ShareX\bin\Release"
-#define AppFilepath AppParentDirectory + "\" + AppFilename
+#define MyAppName "ShareX"
+#define MyAppRootDirectory "..\.."
+#define MyAppOutputDirectory MyAppRootDirectory + "\Output"
+#define MyAppReleaseDirectory MyAppRootDirectory + "\ShareX\bin\Release"
+#define MyAppFilename MyAppName + ".exe"
+#define MyAppFilepath MyAppReleaseDirectory + "\" + MyAppFilename
 #dim Version[4]
-#expr ParseVersion(AppFilepath, Version[0], Version[1], Version[2], Version[3])
-#define AppVersion Str(Version[0]) + "." + Str(Version[1]) + "." + Str(Version[2])
-#define AppPublisher "ShareX Team"
-#define AppId "82E6AC09-0FEF-4390-AD9F-0DD3F5561EFC"
+#expr ParseVersion(MyAppFilepath, Version[0], Version[1], Version[2], Version[3])
+#define MyAppVersion Str(Version[0]) + "." + Str(Version[1]) + "." + Str(Version[2])
+#define MyAppPublisher "ShareX Team"
+#define MyAppId "82E6AC09-0FEF-4390-AD9F-0DD3F5561EFC"
 
 [Setup]
-AppCopyright=Copyright (c) 2007-2016 {#AppPublisher}
-AppId={#AppId}
-AppMutex={#AppId}
-AppName={#AppName}
-AppPublisher={#AppPublisher}
+AppCopyright=Copyright (c) 2007-2020 {#MyAppPublisher}
+AppId={#MyAppId}
+AppMutex={#MyAppId}
+AppName={#MyAppName}
+AppPublisher={#MyAppPublisher}
 AppPublisherURL=https://getsharex.com
 AppSupportURL=https://github.com/ShareX/ShareX/issues
 AppUpdatesURL=https://github.com/ShareX/ShareX/releases
-AppVerName={#AppName} {#AppVersion}
-AppVersion={#AppVersion}
-ArchitecturesAllowed=x86 x64 ia64
+AppVerName={#MyAppName} {#MyAppVersion}
+AppVersion={#MyAppVersion}
+ArchitecturesAllowed=x86 x64 ia64 arm64
 ArchitecturesInstallIn64BitMode=x64 ia64
-DefaultDirName={pf}\{#AppName}
-DefaultGroupName={#AppName}
+DefaultDirName={pf}\{#MyAppName}
+DefaultGroupName={#MyAppName}
 DirExistsWarning=no
-DisableReadyPage=yes
+DisableStartupPrompt=yes
+DisableWelcomePage=yes
 DisableProgramGroupPage=yes
-LicenseFile={#RootDirectory}\LICENSE.txt
-MinVersion=0,5.01.2600
-OutputBaseFilename={#AppName}-{#AppVersion}-setup
-OutputDir=Output\
+DisableReadyPage=no
+DisableReadyMemo=no
+DisableFinishedPage=no
+LicenseFile={#MyAppRootDirectory}\LICENSE.txt
+; .NET 4.7.2 is supported only on Windows 7 SP1 and up
+MinVersion=0,6.1.7601
+OutputBaseFilename={#MyAppName}-{#MyAppVersion}-setup
+OutputDir={#MyAppOutputDirectory}
 PrivilegesRequired=none
 ShowLanguageDialog=no
-UninstallDisplayIcon={app}\{#AppFilename}
-UninstallDisplayName={#AppName}
-VersionInfoCompany={#AppPublisher}
-VersionInfoTextVersion={#AppVersion}
-VersionInfoVersion={#AppVersion}
+UninstallDisplayIcon={app}\{#MyAppFilename}
+UninstallDisplayName={#MyAppName}
+VersionInfoCompany={#MyAppPublisher}
+VersionInfoTextVersion={#MyAppVersion}
+VersionInfoVersion={#MyAppVersion}
 WizardImageFile=WizardImageFile.bmp
 WizardImageStretch=no
 WizardSmallImageFile=WizardSmallImageFile.bmp
 
-[Languages]
-Name: "en"; MessagesFile: "compiler:Default.isl"
-Name: "de"; MessagesFile: "compiler:Languages\German.isl"
+#include "Scripts\lang\english.iss"
 
 [Tasks]
-Name: "CreateDesktopIcon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional shortcuts:"
-Name: "CreateContextMenuButton"; Description: "Show ""Upload with ShareX"" button in Windows Explorer context menu"; GroupDescription: "Additional shortcuts:"
-Name: "CreateSendToIcon"; Description: "Create a send to shortcut"; GroupDescription: "Additional shortcuts:"
-Name: "CreateQuickLaunchIcon"; Description: "Create a quick launch shortcut"; GroupDescription: "Additional shortcuts:"; OnlyBelowVersion: 0,6.1
-Name: "CreateStartupIcon"; Description: "Run ShareX when Windows starts"; GroupDescription: "Other tasks:"
+Name: "CreateDesktopIcon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional shortcuts:"; Check: not IsUpdating and not DesktopIconExists
+Name: "CreateContextMenuButton"; Description: "Show ""Upload with ShareX"" button in Windows Explorer context menu"; GroupDescription: "Additional shortcuts:"; Check: not IsUpdating
+Name: "CreateSendToIcon"; Description: "Create a send to shortcut"; GroupDescription: "Additional shortcuts:"; Check: not IsUpdating
+Name: "CreateStartupIcon"; Description: "Run ShareX when Windows starts"; GroupDescription: "Other tasks:"; Check: not IsUpdating
 
 [Files]
-Source: "{#AppParentDirectory}\ShareX.exe"; DestDir: {app}; Flags: ignoreversion
-Source: "{#AppParentDirectory}\ShareX.exe.config"; DestDir: {app}; Flags: ignoreversion
-Source: "{#AppParentDirectory}\*.dll"; DestDir: {app}; Flags: ignoreversion
-Source: "{#RootDirectory}\Licenses\*.txt"; DestDir: {app}\Licenses; Flags: ignoreversion
-Source: "Output\Recorder-devices-setup.exe"; DestDir: {app}; Flags: ignoreversion
-Source: "{#RootDirectory}\ShareX.Chrome\bin\Release\ShareX_Chrome.exe"; DestDir: {app}; Flags: ignoreversion
-Source: "{#AppParentDirectory}\de\*.resources.dll"; DestDir: {app}\Languages\de; Flags: ignoreversion
-Source: "{#AppParentDirectory}\es\*.resources.dll"; DestDir: {app}\Languages\es; Flags: ignoreversion
-Source: "{#AppParentDirectory}\fr\*.resources.dll"; DestDir: {app}\Languages\fr; Flags: ignoreversion
-Source: "{#AppParentDirectory}\hu\*.resources.dll"; DestDir: {app}\Languages\hu; Flags: ignoreversion
-Source: "{#AppParentDirectory}\ko-KR\*.resources.dll"; DestDir: {app}\Languages\ko-KR; Flags: ignoreversion
-Source: "{#AppParentDirectory}\nl-NL\*.resources.dll"; DestDir: {app}\Languages\nl-NL; Flags: ignoreversion
-Source: "{#AppParentDirectory}\pt-BR\*.resources.dll"; DestDir: {app}\Languages\pt-BR; Flags: ignoreversion
-Source: "{#AppParentDirectory}\ru\*.resources.dll"; DestDir: {app}\Languages\ru; Flags: ignoreversion
-Source: "{#AppParentDirectory}\tr\*.resources.dll"; DestDir: {app}\Languages\tr; Flags: ignoreversion
-Source: "{#AppParentDirectory}\vi-VN\*.resources.dll"; DestDir: {app}\Languages\vi-VN; Flags: ignoreversion
-Source: "{#AppParentDirectory}\zh-CN\*.resources.dll"; DestDir: {app}\Languages\zh-CN; Flags: ignoreversion
+Source: "{#MyAppFilepath}"; DestDir: {app}; Flags: ignoreversion
+Source: "{#MyAppFilepath}.config"; DestDir: {app}; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\*.dll"; DestDir: {app}; Flags: ignoreversion
+Source: "{#MyAppRootDirectory}\Licenses\*.txt"; DestDir: {app}\Licenses; Flags: ignoreversion
+Source: "{#MyAppOutputDirectory}\Recorder-devices-setup.exe"; DestDir: {app}; Flags: ignoreversion
+Source: "{#MyAppRootDirectory}\ShareX.NativeMessagingHost\bin\Release\ShareX_NativeMessagingHost.exe"; DestDir: {app}; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\de\*.resources.dll"; DestDir: {app}\Languages\de; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\es\*.resources.dll"; DestDir: {app}\Languages\es; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\es-MX\*.resources.dll"; DestDir: {app}\Languages\es-MX; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\fa-IR\*.resources.dll"; DestDir: {app}\Languages\fa-IR; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\fr\*.resources.dll"; DestDir: {app}\Languages\fr; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\hu\*.resources.dll"; DestDir: {app}\Languages\hu; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\id-ID\*.resources.dll"; DestDir: {app}\Languages\id-ID; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\it-IT\*.resources.dll"; DestDir: {app}\Languages\it-IT; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\ja-JP\*.resources.dll"; DestDir: {app}\Languages\ja-JP; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\ko-KR\*.resources.dll"; DestDir: {app}\Languages\ko-KR; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\nl-NL\*.resources.dll"; DestDir: {app}\Languages\nl-NL; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\pt-BR\*.resources.dll"; DestDir: {app}\Languages\pt-BR; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\pt-PT\*.resources.dll"; DestDir: {app}\Languages\pt-PT; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\ru\*.resources.dll"; DestDir: {app}\Languages\ru; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\tr\*.resources.dll"; DestDir: {app}\Languages\tr; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\uk\*.resources.dll"; DestDir: {app}\Languages\uk; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\vi-VN\*.resources.dll"; DestDir: {app}\Languages\vi-VN; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\zh-CN\*.resources.dll"; DestDir: {app}\Languages\zh-CN; Flags: ignoreversion
+Source: "{#MyAppReleaseDirectory}\zh-TW\*.resources.dll"; DestDir: {app}\Languages\zh-TW; Flags: ignoreversion
+Source: "{#MyAppRootDirectory}\ShareX.ScreenCaptureLib\Stickers\*"; DestDir: {app}\Stickers; Flags: ignoreversion recursesubdirs
 Source: "puush"; DestDir: {app}; Check: IsPuushMode
 
 [Icons]
-Name: "{group}\{#AppName}"; Filename: "{app}\{#AppFilename}"; WorkingDir: "{app}"
-Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"; WorkingDir: "{app}"
-Name: "{userdesktop}\{#AppName}"; Filename: "{app}\{#AppFilename}"; WorkingDir: "{app}"; Tasks: CreateDesktopIcon; Check: not DesktopIconExists
-Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#AppName}"; Filename: "{app}\{#AppFilename}"; WorkingDir: "{app}"; Tasks: CreateQuickLaunchIcon
-Name: "{sendto}\{#AppName}"; Filename: "{app}\{#AppFilename}"; WorkingDir: "{app}"; Tasks: CreateSendToIcon
-Name: "{userstartup}\{#AppName}"; Filename: "{app}\{#AppFilename}"; WorkingDir: "{app}"; Parameters: "-silent"; Tasks: CreateStartupIcon
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppFilename}"; WorkingDir: "{app}"
+Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; WorkingDir: "{app}"
+Name: "{userdesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppFilename}"; WorkingDir: "{app}"; Tasks: CreateDesktopIcon
+Name: "{sendto}\{#MyAppName}"; Filename: "{app}\{#MyAppFilename}"; WorkingDir: "{app}"; Tasks: CreateSendToIcon
+Name: "{userstartup}\{#MyAppName}"; Filename: "{app}\{#MyAppFilename}"; WorkingDir: "{app}"; Parameters: "-silent"; Tasks: CreateStartupIcon
 
 [Run]
-Filename: "{app}\{#AppFilename}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall
-
-[UninstallRun]
-Filename: regsvr32; WorkingDir: {app}; Parameters: "/s /u screen-capture-recorder.dll"; Check: not IsWin64
-Filename: regsvr32; WorkingDir: {app}; Parameters: "/s /u screen-capture-recorder-x64.dll"; Check: IsWin64
-Filename: regsvr32; WorkingDir: {app}; Parameters: "/s /u audio_sniffer.dll"; Check: not IsWin64
-Filename: regsvr32; WorkingDir: {app}; Parameters: "/s /u audio_sniffer-x64.dll"; Check: IsWin64
+Filename: "{app}\{#MyAppFilename}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall; Check: not IsNoRun
 
 [Registry]
-Root: "HKCU"; Subkey: "Software\Classes\*\shell\{#AppName}"; ValueType: string; ValueData: "Upload with {#AppName}"; Tasks: CreateContextMenuButton
-Root: "HKCU"; Subkey: "Software\Classes\*\shell\{#AppName}"; ValueType: string; ValueName: "Icon"; ValueData: """{app}\{#AppFilename}"",0"; Tasks: CreateContextMenuButton
-Root: "HKCU"; Subkey: "Software\Classes\*\shell\{#AppName}\command"; ValueType: string; ValueData: """{app}\{#AppFilename}"" ""%1"""; Tasks: CreateContextMenuButton
-Root: "HKCU"; Subkey: "Software\Classes\Directory\shell\{#AppName}"; ValueType: string; ValueData: "Upload with {#AppName}"; Tasks: CreateContextMenuButton
-Root: "HKCU"; Subkey: "Software\Classes\Directory\shell\{#AppName}"; ValueType: string; ValueName: "Icon"; ValueData: """{app}\{#AppFilename}"",0"; Tasks: CreateContextMenuButton
-Root: "HKCU"; Subkey: "Software\Classes\Directory\shell\{#AppName}\command"; ValueType: string; ValueData: """{app}\{#AppFilename}"" ""%1"""; Tasks: CreateContextMenuButton
-Root: "HKCU"; Subkey: "Software\Classes\*\shell\{#AppName}"; Flags: dontcreatekey uninsdeletekey
-Root: "HKCU"; Subkey: "Software\Classes\Directory\shell\{#AppName}"; Flags: dontcreatekey uninsdeletekey
-Root: "HKCU"; Subkey: "Software\Classes\Folder\shell\{#AppName}"; Flags: dontcreatekey uninsdeletekey
+Root: "HKCU"; Subkey: "Software\Classes\*\shell\{#MyAppName}"; ValueType: string; ValueData: "Upload with {#MyAppName}"; Tasks: CreateContextMenuButton
+Root: "HKCU"; Subkey: "Software\Classes\*\shell\{#MyAppName}"; ValueType: string; ValueName: "Icon"; ValueData: """{app}\{#MyAppFilename}"",0"; Tasks: CreateContextMenuButton
+Root: "HKCU"; Subkey: "Software\Classes\*\shell\{#MyAppName}\command"; ValueType: string; ValueData: """{app}\{#MyAppFilename}"" ""%1"""; Tasks: CreateContextMenuButton
+Root: "HKCU"; Subkey: "Software\Classes\Directory\shell\{#MyAppName}"; ValueType: string; ValueData: "Upload with {#MyAppName}"; Tasks: CreateContextMenuButton
+Root: "HKCU"; Subkey: "Software\Classes\Directory\shell\{#MyAppName}"; ValueType: string; ValueName: "Icon"; ValueData: """{app}\{#MyAppFilename}"",0"; Tasks: CreateContextMenuButton
+Root: "HKCU"; Subkey: "Software\Classes\Directory\shell\{#MyAppName}\command"; ValueType: string; ValueData: """{app}\{#MyAppFilename}"" ""%1"""; Tasks: CreateContextMenuButton
+Root: "HKCU"; Subkey: "Software\Classes\*\shell\{#MyAppName}"; Flags: dontcreatekey uninsdeletekey
+Root: "HKCU"; Subkey: "Software\Classes\Directory\shell\{#MyAppName}"; Flags: dontcreatekey uninsdeletekey
+Root: "HKCU"; Subkey: "Software\Classes\.sxcu"; Flags: dontcreatekey uninsdeletekey
+Root: "HKCU"; Subkey: "Software\Classes\ShareX.sxcu"; Flags: dontcreatekey uninsdeletekey
+Root: "HKCU"; Subkey: "Software\Classes\.sxie"; Flags: dontcreatekey uninsdeletekey
+Root: "HKCU"; Subkey: "Software\Classes\ShareX.sxie"; Flags: dontcreatekey uninsdeletekey
+Root: "HKCU"; Subkey: "Software\Classes\SystemFileAssociations\image\shell\ShareXImageEditor"; Flags: dontcreatekey uninsdeletekey
 
-[Code]
+[CustomMessages]
+DependenciesDir=Dependencies
+
 #include "Scripts\products.iss"
 #include "Scripts\products\stringversion.iss"
 #include "Scripts\products\winversion.iss"
 #include "Scripts\products\fileversion.iss"
 #include "Scripts\products\dotnetfxversion.iss"
-#include "Scripts\products\msi31.iss"
-#include "Scripts\products\dotnetfx40full.iss"
+#include "scripts\products\dotnetfx47.iss"
 
-procedure InitializeWizard;
-begin
-  WizardForm.LicenseAcceptedRadio.Checked := true;
-end;
-
+[Code]
 function InitializeSetup(): Boolean;
 begin
   initwinversion();
-  msi31('3.1');
-  dotnetfx40full();
+  dotnetfx47(72);
   Result := true;
-end;
-
-function DesktopIconExists(): Boolean;
-begin
-  Result := FileExists(ExpandConstant('{userdesktop}\{#AppName}.lnk'));
 end;
 
 function CmdLineParamExists(const value: string): Boolean;
@@ -141,7 +141,22 @@ begin
     end;
 end;
 
-function IsPuushMode: Boolean;
+function IsUpdating(): Boolean;
+begin
+  Result := CmdLineParamExists('/UPDATE');
+end;
+
+function IsNoRun(): Boolean;
+begin
+  Result := CmdLineParamExists('/NORUN');
+end;
+
+function IsPuushMode(): Boolean;
 begin
   Result := CmdLineParamExists('-puush');
+end;
+
+function DesktopIconExists(): Boolean;
+begin
+  Result := FileExists(ExpandConstant('{userdesktop}\{#MyAppName}.lnk'));
 end;

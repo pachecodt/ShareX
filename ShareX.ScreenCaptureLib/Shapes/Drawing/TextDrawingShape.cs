@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -26,15 +26,17 @@
 using ShareX.HelpersLib;
 using System.Drawing;
 using System.Drawing.Text;
+using System.Windows.Forms;
 
 namespace ShareX.ScreenCaptureLib
 {
     public class TextDrawingShape : RectangleDrawingShape
     {
-        public override ShapeType ShapeType { get; } = ShapeType.DrawingText;
+        public override ShapeType ShapeType { get; } = ShapeType.DrawingTextBackground;
 
         public string Text { get; set; }
         public TextDrawingOptions TextOptions { get; set; }
+        public virtual bool SupportGradient { get; }
 
         public override void OnConfigLoad()
         {
@@ -42,7 +44,10 @@ namespace ShareX.ScreenCaptureLib
             BorderColor = AnnotationOptions.TextBorderColor;
             BorderSize = AnnotationOptions.TextBorderSize;
             FillColor = AnnotationOptions.TextFillColor;
-            CornerRadius = AnnotationOptions.TextCornerRadius;
+            CornerRadius = AnnotationOptions.DrawingCornerRadius;
+            Shadow = AnnotationOptions.Shadow;
+            ShadowColor = AnnotationOptions.ShadowColor;
+            ShadowOffset = AnnotationOptions.ShadowOffset;
         }
 
         public override void OnConfigSave()
@@ -51,26 +56,43 @@ namespace ShareX.ScreenCaptureLib
             AnnotationOptions.TextBorderColor = BorderColor;
             AnnotationOptions.TextBorderSize = BorderSize;
             AnnotationOptions.TextFillColor = FillColor;
-            AnnotationOptions.TextCornerRadius = (int)CornerRadius;
+            AnnotationOptions.DrawingCornerRadius = CornerRadius;
+            AnnotationOptions.Shadow = Shadow;
+            AnnotationOptions.ShadowColor = ShadowColor;
+            AnnotationOptions.ShadowOffset = ShadowOffset;
         }
 
         public override void OnDraw(Graphics g)
         {
-            base.OnDraw(g);
-
+            DrawRectangle(g);
             DrawText(g);
         }
 
         protected void DrawText(Graphics g)
         {
-            if (!string.IsNullOrEmpty(Text) && Rectangle.Width > 10 && Rectangle.Height > 10)
+            if (Shadow)
             {
-                using (Font font = new Font(TextOptions.Font, TextOptions.Size, TextOptions.Style))
-                using (Brush textBrush = new SolidBrush(TextOptions.Color))
-                using (StringFormat sf = new StringFormat { Alignment = TextOptions.AlignmentHorizontal, LineAlignment = TextOptions.AlignmentVertical })
+                DrawText(g, Text, ShadowColor, TextOptions, Rectangle.LocationOffset(ShadowOffset));
+            }
+
+            DrawText(g, Text, TextOptions, Rectangle);
+        }
+
+        protected void DrawText(Graphics g, string text, TextDrawingOptions options, Rectangle rect)
+        {
+            DrawText(g, text, options.Color, options, rect);
+        }
+
+        protected void DrawText(Graphics g, string text, Color textColor, TextDrawingOptions options, Rectangle rect)
+        {
+            if (!string.IsNullOrEmpty(text) && rect.Width > 10 && rect.Height > 10)
+            {
+                using (Font font = new Font(options.Font, options.Size, options.Style))
+                using (Brush textBrush = new SolidBrush(textColor))
+                using (StringFormat sf = new StringFormat { Alignment = options.AlignmentHorizontal, LineAlignment = options.AlignmentVertical })
                 {
                     g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
-                    g.DrawString(Text, font, textBrush, Rectangle, sf);
+                    g.DrawString(text, font, textBrush, rect, sf);
                     g.TextRenderingHint = TextRenderingHint.SystemDefault;
                 }
             }
@@ -78,23 +100,23 @@ namespace ShareX.ScreenCaptureLib
 
         public override void OnCreating()
         {
-            StartPosition = EndPosition = InputManager.MousePosition0Based;
+            Point pos = InputManager.ClientMousePosition;
+            Rectangle = new Rectangle(pos.X, pos.Y, 1, 1);
 
-            ShowTextInputBox();
-
-            if (string.IsNullOrEmpty(Text))
+            if (ShowTextInputBox())
             {
-                Remove();
+                OnCreated();
             }
             else
             {
-                OnCreated();
+                Remove();
             }
         }
 
         public override void OnCreated()
         {
             AutoSize(true);
+            base.OnCreated();
             ShowNodes();
         }
 
@@ -103,34 +125,45 @@ namespace ShareX.ScreenCaptureLib
             ShowTextInputBox();
         }
 
-        private void ShowTextInputBox()
+        private bool ShowTextInputBox()
         {
-            Manager.PauseForm();
+            bool result;
 
-            using (TextDrawingInputBox inputBox = new TextDrawingInputBox(Text, TextOptions))
+            Manager.Form.Pause();
+
+            using (TextDrawingInputBox inputBox = new TextDrawingInputBox(Text, TextOptions, SupportGradient))
             {
-                inputBox.ShowDialog();
+                result = inputBox.ShowDialog(Manager.Form) == DialogResult.OK;
                 Text = inputBox.InputText;
                 OnConfigSave();
             }
 
-            Manager.ResumeForm();
+            Manager.Form.Resume();
+
+            return result;
         }
 
         public void AutoSize(bool center)
         {
             Size size;
 
-            using (Font font = new Font(TextOptions.Font, TextOptions.Size, TextOptions.Style))
+            if (!string.IsNullOrEmpty(Text))
             {
-                size = Helpers.MeasureText(Text, font).Offset(10, 15);
+                using (Font font = new Font(TextOptions.Font, TextOptions.Size, TextOptions.Style))
+                {
+                    size = Helpers.MeasureText(Text, font).Offset(15, 20);
+                }
+            }
+            else
+            {
+                size = new Size(100, 60);
             }
 
             Point location;
 
             if (center)
             {
-                location = new Point(Rectangle.X - size.Width / 2, Rectangle.Y - size.Height / 2);
+                location = new Point(Rectangle.X - (size.Width / 2), Rectangle.Y - (size.Height / 2));
             }
             else
             {

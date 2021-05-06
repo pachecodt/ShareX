@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -28,7 +28,7 @@ using ShareX.MediaLib.Properties;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ShareX.MediaLib
@@ -44,13 +44,15 @@ namespace ShareX.MediaLib
         {
             FFmpegPath = ffmpegPath;
             Options = options;
+
             InitializeComponent();
-            Icon = ShareXResources.Icon;
+            ShareXResources.ApplyTheme(this);
+
             txtMediaPath.Text = Options.LastVideoPath ?? "";
             pgOptions.SelectedObject = Options;
         }
 
-        private void btnStart_Click(object sender, EventArgs e)
+        private async void btnStart_Click(object sender, EventArgs e)
         {
             string mediaPath = txtMediaPath.Text;
 
@@ -63,34 +65,29 @@ namespace ShareX.MediaLib
                 pbProgress.Visible = true;
                 btnStart.Visible = false;
 
-                new Thread(() =>
-                {
-                    List<VideoThumbnailInfo> thumbnails = null;
+                List<VideoThumbnailInfo> thumbnails = null;
 
+                await Task.Run(() =>
+                {
                     try
                     {
-                        VideoThumbnailer thumbnailer = new VideoThumbnailer(mediaPath, FFmpegPath, Options);
+                        VideoThumbnailer thumbnailer = new VideoThumbnailer(FFmpegPath, Options);
                         thumbnailer.ProgressChanged += Thumbnailer_ProgressChanged;
-                        thumbnails = thumbnailer.TakeThumbnails();
+                        thumbnails = thumbnailer.TakeThumbnails(mediaPath);
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.ToString(), "ShareX - Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ex.ShowError();
                     }
-                    finally
-                    {
-                        this.InvokeSafe(() =>
-                        {
-                            if (thumbnails != null)
-                            {
-                                OnThumbnailsTaken(thumbnails);
-                            }
+                });
 
-                            btnStart.Visible = true;
-                            pbProgress.Visible = false;
-                        });
-                    }
-                }).Start();
+                if (thumbnails != null)
+                {
+                    OnThumbnailsTaken(thumbnails);
+                }
+
+                btnStart.Visible = true;
+                pbProgress.Visible = false;
             }
         }
 

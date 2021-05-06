@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -33,11 +33,11 @@ namespace ShareX.UploadersLib
 {
     public class FTPAccount : ICloneable
     {
-        [Category("Account"), Description("Connection protocol"), DefaultValue(FTPProtocol.FTP)]
-        public FTPProtocol Protocol { get; set; }
-
         [Category("FTP"), Description("Shown in the list as: Name - Server:Port")]
         public string Name { get; set; }
+
+        [Category("Account"), Description("Connection protocol"), DefaultValue(FTPProtocol.FTP)]
+        public FTPProtocol Protocol { get; set; }
 
         [Category("FTP"), Description("Host, e.g. google.com")]
         public string Host { get; set; }
@@ -48,8 +48,11 @@ namespace ShareX.UploadersLib
         [Category("FTP")]
         public string Username { get; set; }
 
-        [Category("FTP"), PasswordPropertyText(true)]
+        [Category("FTP"), PasswordPropertyText(true), JsonEncrypt]
         public string Password { get; set; }
+
+        [Category("FTP"), Description("Set true for active or false for passive"), DefaultValue(false)]
+        public bool IsActive { get; set; }
 
         [Category("FTP"), Description("FTP sub folder path, example: Screenshots.\r\nYou can use name parsing: %y = year, %mo = month.")]
         public string SubFolderPath { get; set; }
@@ -60,14 +63,11 @@ namespace ShareX.UploadersLib
         [Category("FTP"), Description("URL = HttpHomePath + SubFolderPath + FileName\r\nIf HttpHomePath is empty then URL = Host + SubFolderPath + FileName\r\n%host = Host")]
         public string HttpHomePath { get; set; }
 
-        [Category("FTP"), Description("Automatically add sub folder path to end of http home path"), DefaultValue(true)]
+        [Category("FTP"), Description("Automatically add sub folder path to end of http home path"), DefaultValue(false)]
         public bool HttpHomePathAutoAddSubFolderPath { get; set; }
 
         [Category("FTP"), Description("Don't add file extension to URL"), DefaultValue(false)]
         public bool HttpHomePathNoExtension { get; set; }
-
-        [Category("FTP"), Description("Set true for active or false for passive"), DefaultValue(false)]
-        public bool IsActive { get; set; }
 
         [Category("FTP"), Description("Protocol://Host:Port"), Browsable(false)]
         public string FTPAddress
@@ -99,23 +99,24 @@ namespace ShareX.UploadersLib
             }
         }
 
-        private string exampleFilename = "screenshot.jpg";
+        private string exampleFilename = "example.png";
 
         [Category("FTP"), Description("Preview of the FTP path based on the settings above")]
-        public string PreviewFtpPath
-        {
-            get
-            {
-                return GetFtpPath(exampleFilename);
-            }
-        }
+        public string PreviewFtpPath => GetFtpPath(exampleFilename);
 
         [Category("FTP"), Description("Preview of the HTTP path based on the settings above")]
         public string PreviewHttpPath
         {
             get
             {
-                return GetUriPath(exampleFilename);
+                try
+                {
+                    return GetUriPath(exampleFilename);
+                }
+                catch
+                {
+                    return "";
+                }
             }
         }
 
@@ -126,25 +127,25 @@ namespace ShareX.UploadersLib
         [Editor(typeof(CertFileNameEditor), typeof(UITypeEditor))]
         public string FTPSCertificateLocation { get; set; }
 
-        [Category("SFTP"), Description("OpenSSH key passphrase"), PasswordPropertyText(true)]
-        public string Passphrase { get; set; }
-
         [Category("SFTP"), Description("Key location")]
         [Editor(typeof(KeyFileNameEditor), typeof(UITypeEditor))]
         public string Keypath { get; set; }
 
+        [Category("SFTP"), Description("OpenSSH key passphrase"), PasswordPropertyText(true), JsonEncrypt]
+        public string Passphrase { get; set; }
+
         public FTPAccount()
         {
-            Protocol = FTPProtocol.FTP;
             Name = "New account";
-            Host = "host";
+            Protocol = FTPProtocol.FTP;
+            Host = "";
             Port = 21;
+            IsActive = false;
             SubFolderPath = "";
             BrowserProtocol = BrowserProtocol.http;
             HttpHomePath = "";
             HttpHomePathAutoAddSubFolderPath = true;
             HttpHomePathNoExtension = false;
-            IsActive = false;
             FTPSEncryption = FTPSEncryption.Explicit;
             FTPSCertificateLocation = "";
         }
@@ -157,14 +158,12 @@ namespace ShareX.UploadersLib
 
         public string GetHttpHomePath()
         {
-            // @ deprecated
-            if (HttpHomePath.StartsWith("@"))
-            {
-                HttpHomePath = HttpHomePath.Substring(1);
-                HttpHomePathAutoAddSubFolderPath = false;
-            }
+            string homePath = HttpHomePath.Replace("%host", Host);
 
-            return NameParser.Parse(NameParserType.URL, HttpHomePath.Replace("%host", Host));
+            CustomUploaderParser parser = new CustomUploaderParser();
+            parser.UseNameParser = true;
+            parser.NameParserType = NameParserType.URL;
+            return parser.Parse(homePath);
         }
 
         public string GetUriPath(string filename, string subFolderPath = null)
@@ -192,14 +191,21 @@ namespace ShareX.UploadersLib
 
             if (string.IsNullOrEmpty(httpHomePath))
             {
-                string host = Host;
+                string url = Host;
 
-                if (host.StartsWith("ftp."))
+                if (url.StartsWith("ftp."))
                 {
-                    host = host.Substring(4);
+                    url = url.Substring(4);
                 }
 
-                httpHomeUri = new UriBuilder(URLHelpers.CombineURL(host, subFolderPath, filename));
+                if (HttpHomePathAutoAddSubFolderPath)
+                {
+                    url = URLHelpers.CombineURL(url, subFolderPath);
+                }
+
+                url = URLHelpers.CombineURL(url, filename);
+
+                httpHomeUri = new UriBuilder(url);
                 httpHomeUri.Port = -1; //Since httpHomePath is not set, it's safe to erase UriBuilder's assumed port number
             }
             else
@@ -250,7 +256,7 @@ namespace ShareX.UploadersLib
             }
 
             httpHomeUri.Scheme = BrowserProtocol.GetDescription();
-            return httpHomeUri.Uri.AbsoluteUri;
+            return httpHomeUri.Uri.OriginalString;
         }
 
         public string GetFtpPath(string filemame)
@@ -265,7 +271,7 @@ namespace ShareX.UploadersLib
 
         public override string ToString()
         {
-            return string.Format("{0} - {1}:{2}", Name, Host, Port);
+            return $"{Name} ({Host}:{Port})";
         }
 
         public FTPAccount Clone()

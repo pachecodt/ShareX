@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -69,7 +69,7 @@ namespace ShareX.ScreenCaptureLib
             windows = new List<SimpleWindowInfo>();
             parentHandles = new HashSet<IntPtr>();
 
-            NativeMethods.EnumWindowsProc ewp = EvalWindow;
+            EnumWindowsProc ewp = EvalWindow;
             NativeMethods.EnumWindows(ewp, IntPtr.Zero);
 
             List<SimpleWindowInfo> result = new List<SimpleWindowInfo>();
@@ -111,7 +111,7 @@ namespace ShareX.ScreenCaptureLib
 
         private bool CheckHandle(IntPtr handle, bool isWindow)
         {
-            if (handle == IgnoreHandle || !NativeMethods.IsWindowVisible(handle))
+            if (handle == IgnoreHandle || !NativeMethods.IsWindowVisible(handle) || (isWindow && NativeMethods.IsWindowCloaked(handle)))
             {
                 return true;
             }
@@ -137,7 +137,7 @@ namespace ShareX.ScreenCaptureLib
             {
                 parentHandles.Add(handle);
 
-                NativeMethods.EnumWindowsProc ewp = EvalControl;
+                EnumWindowsProc ewp = EvalControl;
                 NativeMethods.EnumChildWindows(handle, ewp, IntPtr.Zero);
             }
 

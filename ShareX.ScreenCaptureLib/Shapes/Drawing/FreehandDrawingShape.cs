@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -24,9 +24,11 @@
 #endregion License Information (GPL v3)
 
 using ShareX.HelpersLib;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Linq;
 
 namespace ShareX.ScreenCaptureLib
 {
@@ -34,35 +36,32 @@ namespace ShareX.ScreenCaptureLib
     {
         public override ShapeType ShapeType { get; } = ShapeType.DrawingFreehand;
 
-        public override bool IsValidShape => points.Count > 0;
+        public override bool IsValidShape => positions.Count > 0;
+
+        public override bool IsSelectable => Manager.CurrentTool == ShapeType.ToolSelect;
 
         public Point LastPosition
         {
             get
             {
-                if (points.Count > 0)
+                if (positions.Count > 0)
                 {
-                    return points[points.Count - 1];
+                    return positions[positions.Count - 1];
                 }
 
                 return Point.Empty;
             }
             set
             {
-                if (points.Count > 0)
+                if (positions.Count > 0)
                 {
-                    points[points.Count - 1] = value;
+                    positions[positions.Count - 1] = value;
                 }
             }
         }
 
-        private List<Point> points = new List<Point>();
+        private List<Point> positions = new List<Point>();
         private bool isPolygonMode;
-
-        public override bool Intersects(Point position)
-        {
-            return false;
-        }
 
         public override void ShowNodes()
         {
@@ -72,24 +71,24 @@ namespace ShareX.ScreenCaptureLib
         {
             if (Manager.IsCreating)
             {
-                if (Manager.IsCornerMoving)
+                if (Manager.IsCornerMoving && !Manager.IsPanning)
                 {
                     Move(InputManager.MouseVelocity);
                 }
                 else
                 {
-                    Point pos = InputManager.MousePosition0Based;
+                    Point pos = InputManager.ClientMousePosition;
 
-                    if (points.Count == 0 || (!Manager.IsProportionalResizing && LastPosition != pos))
+                    if (positions.Count == 0 || (!Manager.IsProportionalResizing && LastPosition != pos))
                     {
-                        points.Add(pos);
+                        positions.Add(pos);
                     }
 
                     if (Manager.IsProportionalResizing)
                     {
                         if (!isPolygonMode)
                         {
-                            points.Add(pos);
+                            positions.Add(pos);
                         }
 
                         LastPosition = pos;
@@ -97,7 +96,7 @@ namespace ShareX.ScreenCaptureLib
 
                     isPolygonMode = Manager.IsProportionalResizing;
 
-                    Rectangle = points.CreateRectangle();
+                    Rectangle = positions.CreateRectangle();
                 }
             }
             else if (Manager.IsMoving)
@@ -108,22 +107,51 @@ namespace ShareX.ScreenCaptureLib
 
         public override void OnDraw(Graphics g)
         {
-            if (points.Count > 0 && BorderSize > 0 && BorderColor.A > 0)
-            {
-                g.SmoothingMode = SmoothingMode.HighQuality;
+            DrawFreehand(g);
+        }
 
-                if (points.Count == 1)
+        protected void DrawFreehand(Graphics g)
+        {
+            int borderSize = Math.Max(BorderSize, 1);
+
+            if (Shadow)
+            {
+                DrawFreehand(g, ShadowColor, borderSize, BorderStyle, positions.Select(x => x.Add(ShadowOffset)).ToArray());
+            }
+
+            DrawFreehand(g, BorderColor, borderSize, BorderStyle, positions.ToArray());
+        }
+
+        protected void DrawFreehand(Graphics g, Color borderColor, int borderSize, BorderStyle borderStyle, Point[] points)
+        {
+            if (points.Length > 0 && borderSize > 0 && borderColor.A > 0)
+            {
+                if (Manager.IsRenderingOutput)
                 {
-                    using (Brush brush = new SolidBrush(BorderColor))
+                    g.SmoothingMode = SmoothingMode.HighQuality;
+                }
+                else
+                {
+                    g.SmoothingMode = SmoothingMode.HighSpeed;
+                }
+
+                if (points.Length == 1)
+                {
+                    using (Brush brush = new SolidBrush(borderColor))
                     {
-                        Rectangle rect = new Rectangle((int)(points[0].X - BorderSize / 2f), (int)(points[0].Y - BorderSize / 2f), BorderSize, BorderSize);
+                        Rectangle rect = new Rectangle((int)(points[0].X - (borderSize / 2f)), (int)(points[0].Y - (borderSize / 2f)), borderSize, borderSize);
                         g.FillEllipse(brush, rect);
                     }
                 }
                 else
                 {
-                    using (Pen pen = new Pen(BorderColor, BorderSize) { StartCap = LineCap.Round, EndCap = LineCap.Round, LineJoin = LineJoin.Round })
+                    using (Pen pen = new Pen(borderColor, borderSize))
                     {
+                        pen.StartCap = LineCap.Round;
+                        pen.EndCap = LineCap.Round;
+                        pen.LineJoin = LineJoin.Round;
+                        pen.DashStyle = (DashStyle)borderStyle;
+
                         g.DrawLines(pen, points.ToArray());
                     }
                 }
@@ -134,9 +162,9 @@ namespace ShareX.ScreenCaptureLib
 
         public override void Move(int x, int y)
         {
-            for (int i = 0; i < points.Count; i++)
+            for (int i = 0; i < positions.Count; i++)
             {
-                points[i] = points[i].Add(x, y);
+                positions[i] = positions[i].Add(x, y);
             }
 
             Rectangle = Rectangle.LocationOffset(x, y);

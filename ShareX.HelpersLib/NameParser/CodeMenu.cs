@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -24,128 +24,140 @@
 #endregion License Information (GPL v3)
 
 using ShareX.HelpersLib.Properties;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
 namespace ShareX.HelpersLib
 {
-    public static class CodeMenu
+    public class CodeMenu : ContextMenuStrip
     {
-        public static ContextMenuStrip Create<TEntry>(TextBox tb, params TEntry[] ignoreList) where TEntry : CodeMenuEntry
+        public Point MenuLocation
         {
-            ContextMenuStrip cms = new ContextMenuStrip
+            get
             {
-                Font = new Font("Lucida Console", 8),
-                AutoClose = false,
-                Opacity = 0.9,
-                ShowImageMargin = false
-            };
-
-            var variables = Helpers.GetValueFields<TEntry>().Where(x => !ignoreList.Contains(x)).
-                Select(x => new
+                if (MenuLocationBottom)
                 {
-                    Name = x.ToPrefixString(),
-                    Description = x.Description,
-                    Category = x.Category
-                });
+                    return new Point(0, textBoxBase.Height + 1);
+                }
 
-            foreach (var variable in variables)
+                return new Point(textBoxBase.Width + 1, 0);
+            }
+        }
+
+        public bool MenuLocationBottom { get; set; }
+
+        private TextBoxBase textBoxBase;
+
+        public CodeMenu(TextBoxBase tbb, CodeMenuItem[] items)
+        {
+            textBoxBase = tbb;
+
+            Font = new Font("Lucida Console", 8);
+            AutoClose = textBoxBase == null;
+            ShowImageMargin = false;
+
+            foreach (CodeMenuItem item in items)
             {
-                ToolStripMenuItem tsmi = new ToolStripMenuItem { Text = string.Format("{0} - {1}", variable.Name, variable.Description), Tag = variable.Name };
-                tsmi.Click += (sender, e) =>
+                ToolStripMenuItem tsmi = new ToolStripMenuItem { Text = $"{item.Name} - {item.Description}", Tag = item.Name };
+
+                tsmi.MouseUp += (sender, e) =>
                 {
-                    string text = ((ToolStripMenuItem)sender).Tag.ToString();
-                    tb.AppendTextToSelection(text);
+                    if (textBoxBase != null && e.Button == MouseButtons.Left)
+                    {
+                        string text = ((ToolStripMenuItem)sender).Tag.ToString();
+                        textBoxBase.AppendTextToSelection(text);
+                    }
+                    else
+                    {
+                        Close();
+                    }
                 };
 
-                if (string.IsNullOrWhiteSpace(variable.Category))
+                if (string.IsNullOrWhiteSpace(item.Category))
                 {
-                    cms.Items.Add(tsmi);
+                    Items.Add(tsmi);
                 }
                 else
                 {
                     ToolStripMenuItem tsmiParent;
-                    int index = cms.Items.IndexOfKey(variable.Category);
-                    if (0 > index)
+                    int index = Items.IndexOfKey(item.Category);
+                    if (index < 0)
                     {
-                        tsmiParent = new ToolStripMenuItem { Text = variable.Category, Tag = variable.Category, Name = variable.Category };
+                        tsmiParent = new ToolStripMenuItem { Text = item.Category, Tag = item.Category, Name = item.Category };
                         tsmiParent.HideImageMargin();
-                        cms.Items.Add(tsmiParent);
+                        Items.Add(tsmiParent);
                     }
                     else
                     {
-                        tsmiParent = cms.Items[index] as ToolStripMenuItem;
+                        tsmiParent = Items[index] as ToolStripMenuItem;
                     }
                     tsmiParent.DropDownItems.Add(tsmi);
                 }
             }
 
-            cms.Items.Add(new ToolStripSeparator());
+            Items.Add(new ToolStripSeparator());
 
             ToolStripMenuItem tsmiClose = new ToolStripMenuItem(Resources.CodeMenu_Create_Close);
-            tsmiClose.Click += (sender, e) => cms.Close();
-            cms.Items.Add(tsmiClose);
+            tsmiClose.Click += (sender, e) => Close();
+            Items.Add(tsmiClose);
 
-            tb.MouseDown += (sender, e) =>
+            if (ShareXResources.UseCustomTheme)
             {
-                if (cms.Items.Count > 0) cms.Show(tb, new Point(tb.Width + 1, 0));
-            };
-
-            tb.GotFocus += (sender, e) =>
-            {
-                if (cms.Items.Count > 0) cms.Show(tb, new Point(tb.Width + 1, 0));
-            };
-
-            tb.LostFocus += (sender, e) =>
-            {
-                if (cms.Visible) cms.Close();
-            };
-
-            tb.KeyDown += (sender, e) =>
-            {
-                if ((e.KeyCode == Keys.Enter || e.KeyCode == Keys.Escape) && cms.Visible)
-                {
-                    cms.Close();
-                    e.SuppressKeyPress = true;
-                }
-            };
-
-            tb.Disposed += (sender, e) => cms.Dispose();
-
-            return cms;
-        }
-
-        public static ContextMenuStrip Create<TEntry>(params TEntry[] ignoreList) where TEntry : CodeMenuEntry
-        {
-            ContextMenuStrip cms = new ContextMenuStrip
-            {
-                Font = new Font("Lucida Console", 8),
-                AutoClose = true,
-                Opacity = 0.9,
-                ShowImageMargin = false
-            };
-
-            var variables = Helpers.GetValueFields<TEntry>().Where(x => !ignoreList.Contains(x)).
-                Select(x => new
-                {
-                    Name = x.ToPrefixString(),
-                    Description = x.Description
-                });
-
-            foreach (var variable in variables)
-            {
-                ToolStripMenuItem tsmi = new ToolStripMenuItem { Text = string.Format("{0} - {1}", variable.Name, variable.Description), Tag = variable.Name };
-                cms.Items.Add(tsmi);
+                ShareXResources.ApplyCustomThemeToContextMenuStrip(this);
             }
 
-            cms.Items.Add(new ToolStripSeparator());
+            if (textBoxBase != null)
+            {
+                textBoxBase.MouseDown += (sender, e) =>
+                {
+                    if (Items.Count > 0) Show(textBoxBase, MenuLocation);
+                };
 
-            ToolStripMenuItem tsmiClose = new ToolStripMenuItem(Resources.CodeMenu_Create_Close);
-            tsmiClose.Click += (sender, e) => cms.Close();
-            cms.Items.Add(tsmiClose);
+                textBoxBase.GotFocus += (sender, e) =>
+                {
+                    if (Items.Count > 0) Show(textBoxBase, MenuLocation);
+                };
 
-            return cms;
+                textBoxBase.LostFocus += (sender, e) =>
+                {
+                    if (Visible) Close();
+                };
+
+                textBoxBase.KeyDown += (sender, e) =>
+                {
+                    if ((e.KeyCode == Keys.Enter || e.KeyCode == Keys.Escape) && Visible)
+                    {
+                        Close();
+                        e.SuppressKeyPress = true;
+                    }
+                };
+
+                textBoxBase.Disposed += (sender, e) => Dispose();
+            }
+        }
+
+        public static CodeMenu Create<TEntry>(TextBoxBase tb, TEntry[] ignoreList, CodeMenuItem[] extraItems) where TEntry : CodeMenuEntry
+        {
+            List<CodeMenuItem> items = new List<CodeMenuItem>();
+
+            if (extraItems != null)
+            {
+                items.AddRange(extraItems);
+            }
+
+            IEnumerable<CodeMenuItem> codeMenuItems = Helpers.GetValueFields<TEntry>().Where(x => !ignoreList.Contains(x)).
+                Select(x => new CodeMenuItem(x.ToPrefixString(), x.Description, x.Category));
+
+            items.AddRange(codeMenuItems);
+
+            return new CodeMenu(tb, items.ToArray());
+        }
+
+        public static CodeMenu Create<TEntry>(TextBoxBase tb, params TEntry[] ignoreList) where TEntry : CodeMenuEntry
+        {
+            return Create(tb, ignoreList, (CodeMenuItem[])null);
         }
     }
 }

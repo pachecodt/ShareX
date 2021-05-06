@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.HelpersLib;
 using ShareX.UploadersLib.Properties;
 using System.Collections.Generic;
 using System.Drawing;
@@ -57,8 +58,11 @@ namespace ShareX.UploadersLib.FileUploaders
         public const string PuushResetPasswordURL = PuushURL + "/reset_password";
 
         private const string PuushAPIURL = PuushURL + "/api";
-        private const string PuushAPILoginURL = PuushAPIURL + "/auth";
+        private const string PuushAPIAuthenticationURL = PuushAPIURL + "/auth";
         private const string PuushAPIUploadURL = PuushAPIURL + "/up";
+        private const string PuushAPIDeletionURL = PuushAPIURL + "/del";
+        private const string PuushAPIHistoryURL = PuushAPIURL + "/hist";
+        private const string PuushAPIThumbnailURL = PuushAPIURL + "/thumb";
 
         public string APIKey { get; set; }
 
@@ -76,15 +80,17 @@ namespace ShareX.UploadersLib.FileUploaders
             Dictionary<string, string> arguments = new Dictionary<string, string>();
             arguments.Add("e", email);
             arguments.Add("p", password);
-            arguments.Add("z", "ShareX");
+            arguments.Add("z", ShareXResources.UserAgent);
 
-            string response = SendRequest(HttpMethod.POST, PuushAPILoginURL, arguments);
+            // Successful: status,apikey,expire,usage
+            // Failed: status
+            string response = SendRequestMultiPart(PuushAPIAuthenticationURL, arguments);
 
             if (!string.IsNullOrEmpty(response))
             {
                 string[] values = response.Split(',');
 
-                if (values != null && values.Length > 1)
+                if (values.Length > 1)
                 {
                     int status;
 
@@ -98,19 +104,47 @@ namespace ShareX.UploadersLib.FileUploaders
             return null;
         }
 
+        public bool DeleteFile(string id)
+        {
+            Dictionary<string, string> arguments = new Dictionary<string, string>();
+            arguments.Add("k", APIKey);
+            arguments.Add("i", id);
+            arguments.Add("z", ShareXResources.UserAgent);
+
+            // Successful: status\nlist of history items
+            // Failed: status
+            string response = SendRequestMultiPart(PuushAPIDeletionURL, arguments);
+
+            if (!string.IsNullOrEmpty(response))
+            {
+                string[] lines = response.Lines();
+
+                if (lines.Length > 0)
+                {
+                    int status;
+
+                    return int.TryParse(lines[0], out status) && status >= 0;
+                }
+            }
+
+            return false;
+        }
+
         public override UploadResult Upload(Stream stream, string fileName)
         {
             Dictionary<string, string> arguments = new Dictionary<string, string>();
             arguments.Add("k", APIKey);
-            arguments.Add("z", "ShareX");
+            arguments.Add("z", ShareXResources.UserAgent);
 
-            UploadResult result = UploadData(stream, PuushAPIUploadURL, fileName, "f", arguments);
+            // Successful: status,url,id,usage
+            // Failed: status
+            UploadResult result = SendRequestFile(PuushAPIUploadURL, stream, fileName, "f", arguments);
 
             if (result.IsSuccess)
             {
                 string[] values = result.Response.Split(',');
 
-                if (values != null && values.Length > 1)
+                if (values.Length > 0)
                 {
                     int status;
 
@@ -138,7 +172,7 @@ namespace ShareX.UploadersLib.FileUploaders
                                 break;
                         }
                     }
-                    else
+                    else if (values.Length > 1)
                     {
                         result.URL = values[1];
                     }

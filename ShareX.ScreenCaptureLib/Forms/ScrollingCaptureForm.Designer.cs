@@ -35,7 +35,6 @@ namespace ShareX.ScreenCaptureLib
             this.tcScrollingCapture = new System.Windows.Forms.TabControl();
             this.tpCapture = new System.Windows.Forms.TabPage();
             this.gbAfterCapture = new System.Windows.Forms.GroupBox();
-            this.cbAutoClose = new System.Windows.Forms.CheckBox();
             this.cbRemoveDuplicates = new System.Windows.Forms.CheckBox();
             this.cbAutoCombine = new System.Windows.Forms.CheckBox();
             this.chkAutoUpload = new System.Windows.Forms.CheckBox();
@@ -134,13 +133,28 @@ namespace ShareX.ScreenCaptureLib
             0,
             0,
             0});
+            this.nudScrollDelay.Minimum = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
             this.nudScrollDelay.Name = "nudScrollDelay";
+            this.nudScrollDelay.Value = new decimal(new int[] {
+            500,
+            0,
+            0,
+            0});
             this.nudScrollDelay.ValueChanged += new System.EventHandler(this.nudScrollDelay_ValueChanged);
             // 
             // nudMaximumScrollCount
             // 
             resources.ApplyResources(this.nudMaximumScrollCount, "nudMaximumScrollCount");
             this.nudMaximumScrollCount.Name = "nudMaximumScrollCount";
+            this.nudMaximumScrollCount.Value = new decimal(new int[] {
+            20,
+            0,
+            0,
+            0});
             this.nudMaximumScrollCount.ValueChanged += new System.EventHandler(this.nudMaximumScrollCount_ValueChanged);
             // 
             // lblScrollDelay
@@ -163,6 +177,7 @@ namespace ShareX.ScreenCaptureLib
             // 
             // tpCapture
             // 
+            this.tpCapture.BackColor = System.Drawing.SystemColors.Window;
             this.tpCapture.Controls.Add(this.gbAfterCapture);
             this.tpCapture.Controls.Add(this.gbWhileCapturing);
             this.tpCapture.Controls.Add(this.gbBeforeCapture);
@@ -172,24 +187,15 @@ namespace ShareX.ScreenCaptureLib
             this.tpCapture.Controls.Add(this.btnCapture);
             resources.ApplyResources(this.tpCapture, "tpCapture");
             this.tpCapture.Name = "tpCapture";
-            this.tpCapture.UseVisualStyleBackColor = true;
             // 
             // gbAfterCapture
             // 
             resources.ApplyResources(this.gbAfterCapture, "gbAfterCapture");
-            this.gbAfterCapture.Controls.Add(this.cbAutoClose);
             this.gbAfterCapture.Controls.Add(this.cbRemoveDuplicates);
             this.gbAfterCapture.Controls.Add(this.cbAutoCombine);
             this.gbAfterCapture.Controls.Add(this.chkAutoUpload);
             this.gbAfterCapture.Name = "gbAfterCapture";
             this.gbAfterCapture.TabStop = false;
-            // 
-            // cbAutoClose
-            // 
-            resources.ApplyResources(this.cbAutoClose, "cbAutoClose");
-            this.cbAutoClose.Name = "cbAutoClose";
-            this.cbAutoClose.UseVisualStyleBackColor = true;
-            this.cbAutoClose.CheckedChanged += new System.EventHandler(this.cbAutoClose_CheckedChanged);
             // 
             // cbRemoveDuplicates
             // 
@@ -292,7 +298,17 @@ namespace ShareX.ScreenCaptureLib
             0,
             0,
             0});
+            this.nudStartDelay.Minimum = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
             this.nudStartDelay.Name = "nudStartDelay";
+            this.nudStartDelay.Value = new decimal(new int[] {
+            500,
+            0,
+            0,
+            0});
             this.nudStartDelay.ValueChanged += new System.EventHandler(this.nudStartDelay_ValueChanged);
             // 
             // cbStartCaptureAutomatically
@@ -321,6 +337,7 @@ namespace ShareX.ScreenCaptureLib
             // 
             // tpOutput
             // 
+            this.tpOutput.BackColor = System.Drawing.SystemColors.Window;
             this.tpOutput.Controls.Add(this.gbImages);
             this.tpOutput.Controls.Add(this.btnResetCombine);
             this.tpOutput.Controls.Add(this.btnGuessCombineAdjustments);
@@ -331,7 +348,6 @@ namespace ShareX.ScreenCaptureLib
             this.tpOutput.Controls.Add(this.pOutput);
             resources.ApplyResources(this.tpOutput, "tpOutput");
             this.tpOutput.Name = "tpOutput";
-            this.tpOutput.UseVisualStyleBackColor = true;
             // 
             // gbImages
             // 
@@ -540,6 +556,7 @@ namespace ShareX.ScreenCaptureLib
             // 
             // ScrollingCaptureForm
             // 
+            this.AcceptButton = this.btnCapture;
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
@@ -635,6 +652,5 @@ namespace ShareX.ScreenCaptureLib
         private GroupBox gbAfterCapture;
         private GroupBox gbWhileCapturing;
         private GroupBox gbBeforeCapture;
-        private CheckBox cbAutoClose;
     }
 }

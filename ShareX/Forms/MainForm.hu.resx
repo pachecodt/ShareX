@@ -189,9 +189,6 @@
   <data name="tsmiScreenColorPicker.Text" xml:space="preserve">
     <value>Színszedő...</value>
   </data>
-  <data name="tsmiImageEditor.Text" xml:space="preserve">
-    <value>Képszerkesztő...</value>
-  </data>
   <data name="tsmiImageEffects.Text" xml:space="preserve">
     <value>Kép effektek...</value>
   </data>
@@ -209,9 +206,6 @@
   </data>
   <data name="tsmiRuler.Text" xml:space="preserve">
     <value>Vonalzó...</value>
-  </data>
-  <data name="tsmiFTPClient.Text" xml:space="preserve">
-    <value>FTP kliens...</value>
   </data>
   <data name="tsmiTweetMessage.Text" xml:space="preserve">
     <value>Tweet üzenet...</value>
@@ -281,12 +275,6 @@
   </data>
   <data name="tsmiTestURLSharing.Text" xml:space="preserve">
     <value>URL megosztás tesztelése</value>
-  </data>
-  <data name="tsmiDonate.Text" xml:space="preserve">
-    <value>Adományozás...</value>
-  </data>
-  <data name="tsmiAbout.Text" xml:space="preserve">
-    <value>A programról...</value>
   </data>
   <data name="tsmiShowErrors.Text" xml:space="preserve">
     <value>Hibák mutatása</value>
@@ -462,9 +450,6 @@
   <data name="tsmiTrayScreenColorPicker.Text" xml:space="preserve">
     <value>Színszedő...</value>
   </data>
-  <data name="tsmiTrayImageEditor.Text" xml:space="preserve">
-    <value>Képszerkesztő...</value>
-  </data>
   <data name="tsmiTrayImageEffects.Text" xml:space="preserve">
     <value>Kép effektek...</value>
   </data>
@@ -482,9 +467,6 @@
   </data>
   <data name="tsmiTrayRuler.Text" xml:space="preserve">
     <value>Vonalzó...</value>
-  </data>
-  <data name="tsmiTrayFTPClient.Text" xml:space="preserve">
-    <value>FTP kliens...</value>
   </data>
   <data name="tsmiTrayTweetMessage.Text" xml:space="preserve">
     <value>Tweet üzenet...</value>

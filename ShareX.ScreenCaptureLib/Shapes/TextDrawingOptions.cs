@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -24,12 +24,13 @@
 #endregion License Information (GPL v3)
 
 using System.Drawing;
+using System.Drawing.Drawing2D;
 
 namespace ShareX.ScreenCaptureLib
 {
     public class TextDrawingOptions
     {
-        public string Font { get; set; } = "Arial";
+        public string Font { get; set; } = AnnotationOptions.DefaultFont;
         public int Size { get; set; } = 18;
         public Color Color { get; set; } = Color.White;
         public bool Bold { get; set; } = false;
@@ -62,5 +63,10 @@ namespace ShareX.ScreenCaptureLib
                 return style;
             }
         }
+
+        public bool Gradient { get; set; } = false;
+        public Color Color2 { get; set; } = Color.FromArgb(240, 240, 240);
+        public LinearGradientMode GradientMode { get; set; } = LinearGradientMode.Vertical;
+        public bool EnterKeyNewLine { get; set; } = false;
     }
 }

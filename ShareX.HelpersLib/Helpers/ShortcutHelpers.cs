@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -27,6 +27,7 @@ using IWshRuntimeLibrary;
 using Shell32;
 using System;
 using System.IO;
+using System.Reflection;
 using File = System.IO.File;
 using Folder = Shell32.Folder;
 
@@ -42,12 +43,22 @@ namespace ShareX.HelpersLib
 
         public static bool SetShortcut(bool create, string shortcutPath, string targetPath = "", string arguments = "")
         {
-            if (create)
+            try
             {
-                return Create(shortcutPath, targetPath, arguments);
+                if (create)
+                {
+                    return Create(shortcutPath, targetPath, arguments);
+                }
+
+                return Delete(shortcutPath);
+            }
+            catch (Exception e)
+            {
+                DebugHelper.WriteException(e);
+                e.ShowError();
             }
 
-            return Delete(shortcutPath);
+            return false;
         }
 
         public static bool CheckShortcut(Environment.SpecialFolder specialFolder, string checkPath)
@@ -73,21 +84,14 @@ namespace ShareX.HelpersLib
             {
                 Delete(shortcutPath);
 
-                try
-                {
-                    IWshShell wsh = new WshShellClass();
-                    IWshShortcut shortcut = (IWshShortcut)wsh.CreateShortcut(shortcutPath);
-                    shortcut.TargetPath = targetPath;
-                    shortcut.Arguments = arguments;
-                    shortcut.WorkingDirectory = Path.GetDirectoryName(targetPath);
-                    shortcut.Save();
+                IWshShell wsh = new WshShellClass();
+                IWshShortcut shortcut = (IWshShortcut)wsh.CreateShortcut(shortcutPath);
+                shortcut.TargetPath = targetPath;
+                shortcut.Arguments = arguments;
+                shortcut.WorkingDirectory = Path.GetDirectoryName(targetPath);
+                shortcut.Save();
 
-                    return true;
-                }
-                catch (Exception e)
-                {
-                    DebugHelper.WriteException(e);
-                }
+                return true;
             }
 
             return false;
@@ -111,8 +115,9 @@ namespace ShareX.HelpersLib
 
             try
             {
-                Shell shell = new ShellClass();
-                Folder folder = shell.NameSpace(directory);
+                Type t = Type.GetTypeFromProgID("Shell.Application");
+                object shell = Activator.CreateInstance(t);
+                Folder folder = (Folder)t.InvokeMember("NameSpace", BindingFlags.InvokeMethod, null, shell, new object[] { directory });
                 FolderItem folderItem = folder.ParseName(filename);
 
                 if (folderItem != null)

@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -23,11 +23,11 @@
 
 #endregion License Information (GPL v3)
 
-using CG.Web.MegaApiClient;
 using ShareX.HelpersLib;
 using ShareX.UploadersLib.FileUploaders;
 using ShareX.UploadersLib.ImageUploaders;
 using ShareX.UploadersLib.TextUploaders;
+using ShareX.UploadersLib.URLShorteners;
 using System.Collections.Generic;
 
 namespace ShareX.UploadersLib
@@ -36,316 +36,501 @@ namespace ShareX.UploadersLib
     {
         #region Image uploaders
 
-        // Imgur
+        #region Imgur
 
-        public AccountType ImgurAccountType = AccountType.Anonymous;
-        public bool ImgurDirectLink = true;
-        public ImgurThumbnailType ImgurThumbnailType = ImgurThumbnailType.Large_Thumbnail;
-        public bool ImgurUseGIFV = true;
-        public OAuth2Info ImgurOAuth2Info = null;
-        public bool ImgurUploadSelectedAlbum = false;
-        public ImgurAlbumData ImgurSelectedAlbum = null;
-        public List<ImgurAlbumData> ImgurAlbumList = null;
+        public AccountType ImgurAccountType { get; set; } = AccountType.Anonymous;
+        public bool ImgurDirectLink { get; set; } = true;
+        public ImgurThumbnailType ImgurThumbnailType { get; set; } = ImgurThumbnailType.Medium_Thumbnail;
+        public bool ImgurUseGIFV { get; set; } = true;
+        public OAuth2Info ImgurOAuth2Info { get; set; } = null;
+        public bool ImgurUploadSelectedAlbum { get; set; } = false;
+        public ImgurAlbumData ImgurSelectedAlbum { get; set; } = null;
+        public List<ImgurAlbumData> ImgurAlbumList { get; set; } = null;
 
-        // ImageShack
+        #endregion Imgur
 
-        public ImageShackOptions ImageShackSettings = new ImageShackOptions();
+        #region ImageShack
 
-        // TinyPic
+        public ImageShackOptions ImageShackSettings { get; set; } = new ImageShackOptions();
 
-        public AccountType TinyPicAccountType = AccountType.Anonymous;
-        public string TinyPicRegistrationCode = "";
-        public string TinyPicUsername = "";
-        public string TinyPicPassword = "";
-        public bool TinyPicRememberUserPass = false;
+        #endregion ImageShack
 
-        // Flickr
+        #region Flickr
 
-        public FlickrAuthInfo FlickrAuthInfo = new FlickrAuthInfo();
-        public FlickrSettings FlickrSettings = new FlickrSettings();
+        public OAuthInfo FlickrOAuthInfo { get; set; } = null;
+        public FlickrSettings FlickrSettings { get; set; } = new FlickrSettings();
 
-        // Photobucket
+        #endregion Flickr
 
-        public OAuthInfo PhotobucketOAuthInfo = null;
-        public PhotobucketAccountInfo PhotobucketAccountInfo = null;
+        #region Photobucket
 
-        // Picasa
+        public OAuthInfo PhotobucketOAuthInfo { get; set; } = null;
+        public PhotobucketAccountInfo PhotobucketAccountInfo { get; set; } = null;
 
-        public OAuth2Info PicasaOAuth2Info = null;
-        public string PicasaAlbumID = "";
+        #endregion Photobucket
 
-        // Chevereto
+        #region Google Photos
 
-        public CheveretoUploader CheveretoUploader = new CheveretoUploader("http://ultraimg.com/api/1/upload", "3374fa58c672fcaad8dab979f7687397");
-        public bool CheveretoDirectURL = true;
+        public OAuth2Info GooglePhotosOAuth2Info { get; set; } = null;
+        public OAuthUserInfo GooglePhotosUserInfo { get; set; } = null;
+        public string GooglePhotosAlbumID { get; set; } = "";
+        public bool GooglePhotosIsPublic { get; set; } = false;
 
-        // SomeImage
+        #endregion Google Photos
 
-        public string SomeImageAPIKey = "";
-        public bool SomeImageDirectURL = true;
+        #region Chevereto
 
-        // vgy.me
+        public CheveretoUploader CheveretoUploader { get; set; } = new CheveretoUploader();
+        public bool CheveretoDirectURL { get; set; } = true;
 
-        public string VgymeUserKey = "";
+        #endregion Chevereto
+
+        #region vgy.me
+
+        [JsonEncrypt]
+        public string VgymeUserKey { get; set; } = "";
+
+        #endregion vgy.me
 
         #endregion Image uploaders
 
         #region Text uploaders
 
-        // Pastebin
+        #region Pastebin
 
-        public PastebinSettings PastebinSettings = new PastebinSettings();
+        public PastebinSettings PastebinSettings { get; set; } = new PastebinSettings();
 
-        // Paste.ee
+        #endregion Pastebin
 
-        public string Paste_eeUserAPIKey = "public";
+        #region Paste.ee
 
-        // Gist
+        [JsonEncrypt]
+        public string Paste_eeUserKey { get; set; } = "";
+        public bool Paste_eeEncryptPaste { get; set; } = false;
 
-        public bool GistAnonymousLogin = true;
-        public OAuth2Info GistOAuth2Info = null;
-        public bool GistPublishPublic = false;
-        public bool GistRawURL = false;
+        #endregion Paste.ee
 
-        // uPaste
+        #region Gist
 
-        public string UpasteUserKey = "";
-        public bool UpasteIsPublic = false;
+        public OAuth2Info GistOAuth2Info { get; set; } = null;
+        public bool GistPublishPublic { get; set; } = false;
+        public bool GistRawURL { get; set; } = false;
+        public string GistCustomURL { get; set; } = "";
 
-        // Hastebin
+        #endregion Gist
 
-        public string HastebinCustomDomain = "http://hastebin.com";
-        public string HastebinSyntaxHighlighting = "hs";
-        public bool HastebinUseFileExtension = true;
+        #region uPaste
 
-        // OneTimeSecret
+        [JsonEncrypt]
+        public string UpasteUserKey { get; set; } = "";
+        public bool UpasteIsPublic { get; set; } = false;
 
-        public string OneTimeSecretAPIKey = "";
-        public string OneTimeSecretAPIUsername = "";
+        #endregion uPaste
+
+        #region Hastebin
+
+        public string HastebinCustomDomain { get; set; } = "https://hastebin.com";
+        public string HastebinSyntaxHighlighting { get; set; } = "hs";
+        public bool HastebinUseFileExtension { get; set; } = true;
+
+        #endregion Hastebin
+
+        #region OneTimeSecret
+
+        public string OneTimeSecretAPIUsername { get; set; } = "";
+        [JsonEncrypt]
+        public string OneTimeSecretAPIKey { get; set; } = "";
+
+        #endregion OneTimeSecret
+
+        #region Pastie
+
+        public bool PastieIsPublic { get; set; } = false;
+
+        #endregion Pastie
 
         #endregion Text uploaders
 
         #region File uploaders
 
-        // Dropbox
+        #region Dropbox
 
-        public OAuth2Info DropboxOAuth2Info = null;
-        //public DropboxAccount DropboxAccount = null;
-        public string DropboxUploadPath = "Public/ShareX/%y/%mo";
-        public bool DropboxAutoCreateShareableLink = false;
+        public OAuth2Info DropboxOAuth2Info { get; set; } = null;
+        public string DropboxUploadPath { get; set; } = "ShareX/%y/%mo";
+        public bool DropboxAutoCreateShareableLink { get; set; } = true;
+        public bool DropboxUseDirectLink { get; set; } = false;
+
+        // TEMP: For backward compatibility
         public DropboxURLType DropboxURLType = DropboxURLType.Default;
-        public DropboxAccountInfo DropboxAccountInfo = null; // API v1
 
-        // FTP Server
+        #endregion Dropbox
 
-        public List<FTPAccount> FTPAccountList = new List<FTPAccount>();
-        public int FTPSelectedImage = 0;
-        public int FTPSelectedText = 0;
-        public int FTPSelectedFile = 0;
+        #region FTP
 
-        // OneDrive
+        public List<FTPAccount> FTPAccountList { get; set; } = new List<FTPAccount>();
+        public int FTPSelectedImage { get; set; } = 0;
+        public int FTPSelectedText { get; set; } = 0;
+        public int FTPSelectedFile { get; set; } = 0;
 
-        public OAuth2Info OneDriveOAuth2Info = null;
-        public OneDriveFileInfo OneDriveSelectedFolder = OneDrive.RootFolder;
-        public bool OneDriveAutoCreateShareableLink = true;
+        #endregion FTP
 
-        // Google Drive
+        #region OneDrive
 
-        public OAuth2Info GoogleDriveOAuth2Info = null;
-        public bool GoogleDriveIsPublic = true;
-        public bool GoogleDriveDirectLink = false;
-        public bool GoogleDriveUseFolder = false;
-        public string GoogleDriveFolderID = "";
+        public OAuth2Info OneDriveV2OAuth2Info { get; set; } = null;
+        public OneDriveFileInfo OneDriveV2SelectedFolder { get; set; } = OneDrive.RootFolder;
+        public bool OneDriveAutoCreateShareableLink { get; set; } = true;
 
-        // puush
+        #endregion OneDrive
 
-        public string PuushAPIKey = "";
+        #region Gfycat
 
-        // SendSpace
+        public OAuth2Info GfycatOAuth2Info { get; set; } = null;
+        public AccountType GfycatAccountType { get; set; } = AccountType.Anonymous;
+        public bool GfycatIsPublic { get; set; } = false;
+        public bool GfycatKeepAudio { get; set; } = true;
+        public string GfycatTitle { get; set; } = "ShareX";
 
-        public AccountType SendSpaceAccountType = AccountType.Anonymous;
-        public string SendSpaceUsername = "";
-        public string SendSpacePassword = "";
+        #endregion Gfycat
 
-        // Minus
+        #region Google Drive
 
-        public OAuth2Info MinusOAuth2Info = null;
-        public MinusOptions MinusConfig = new MinusOptions();
+        public OAuth2Info GoogleDriveOAuth2Info { get; set; } = null;
+        public bool GoogleDriveIsPublic { get; set; } = true;
+        public bool GoogleDriveDirectLink { get; set; } = false;
+        public bool GoogleDriveUseFolder { get; set; } = false;
+        public string GoogleDriveFolderID { get; set; } = "";
+        public GoogleDriveSharedDrive GoogleDriveSelectedDrive { get; set; } = GoogleDrive.MyDrive;
 
-        // Box
+        #endregion Google Drive
 
-        public OAuth2Info BoxOAuth2Info = null;
-        public BoxFileEntry BoxSelectedFolder = Box.RootFolder;
-        public bool BoxShare = true;
+        #region puush
 
-        // Ge.tt
+        [JsonEncrypt]
+        public string PuushAPIKey { get; set; } = "";
 
-        public Ge_ttLogin Ge_ttLogin = null;
+        #endregion puush
 
-        // Localhostr
+        #region SendSpace
 
-        public string LocalhostrEmail = "";
-        public string LocalhostrPassword = "";
-        public bool LocalhostrDirectURL = true;
+        public AccountType SendSpaceAccountType { get; set; } = AccountType.Anonymous;
+        public string SendSpaceUsername { get; set; } = "";
+        [JsonEncrypt]
+        public string SendSpacePassword { get; set; } = "";
 
-        // Shared Folder
+        #endregion SendSpace
 
-        public List<LocalhostAccount> LocalhostAccountList = new List<LocalhostAccount>();
-        public int LocalhostSelectedImages = 0;
-        public int LocalhostSelectedText = 0;
-        public int LocalhostSelectedFiles = 0;
+        #region Box
 
-        // Email
+        public OAuth2Info BoxOAuth2Info { get; set; } = null;
+        public BoxFileEntry BoxSelectedFolder { get; set; } = Box.RootFolder;
+        public bool BoxShare { get; set; } = true;
+        public BoxShareAccessLevel BoxShareAccessLevel { get; set; } = BoxShareAccessLevel.Open;
 
-        public string EmailSmtpServer = "smtp.gmail.com";
-        public int EmailSmtpPort = 587;
-        public string EmailFrom = "...@gmail.com";
-        public string EmailPassword = "";
-        public bool EmailRememberLastTo = true;
-        public string EmailLastTo = "";
-        public string EmailDefaultSubject = "Sending email from ShareX";
-        public string EmailDefaultBody = "Screenshot is attached.";
-        public bool EmailAutomaticSend = false;
-        public string EmailAutomaticSendTo = "";
+        #endregion Box
 
-        // Jira
+        #region Ge.tt
 
-        public string JiraHost = "http://";
-        public string JiraIssuePrefix = "PROJECT-";
-        public OAuthInfo JiraOAuthInfo = null;
+        public Ge_ttLogin Ge_ttLogin { get; set; } = null;
 
-        // Mega
+        #endregion Ge.tt
 
-        public MegaApiClient.AuthInfos MegaAuthInfos = null;
-        public string MegaParentNodeId = null;
+        #region Localhostr
 
-        // Amazon S3
+        public string LocalhostrEmail { get; set; } = "";
+        [JsonEncrypt]
+        public string LocalhostrPassword { get; set; } = "";
+        public bool LocalhostrDirectURL { get; set; } = true;
 
-        public AmazonS3Settings AmazonS3Settings = new AmazonS3Settings()
+        #endregion Localhostr
+
+        #region Shared folder
+
+        public List<LocalhostAccount> LocalhostAccountList { get; set; } = new List<LocalhostAccount>();
+        public int LocalhostSelectedImages { get; set; } = 0;
+        public int LocalhostSelectedText { get; set; } = 0;
+        public int LocalhostSelectedFiles { get; set; } = 0;
+
+        #endregion Shared folder
+
+        #region Email
+
+        public string EmailSmtpServer { get; set; } = "smtp.gmail.com";
+        public int EmailSmtpPort { get; set; } = 587;
+        public string EmailFrom { get; set; } = "...@gmail.com";
+        [JsonEncrypt]
+        public string EmailPassword { get; set; } = "";
+        public bool EmailRememberLastTo { get; set; } = true;
+        public string EmailLastTo { get; set; } = "";
+        public string EmailDefaultSubject { get; set; } = "Sending email from ShareX";
+        public string EmailDefaultBody { get; set; } = "Screenshot is attached.";
+        public bool EmailAutomaticSend { get; set; } = false;
+        public string EmailAutomaticSendTo { get; set; } = "";
+
+        #endregion Email
+
+        #region Jira
+
+        public string JiraHost { get; set; } = "http://";
+        public string JiraIssuePrefix { get; set; } = "PROJECT-";
+        public OAuthInfo JiraOAuthInfo { get; set; } = null;
+
+        #endregion Jira
+
+        #region Mega
+
+        public MegaAuthInfos MegaAuthInfos { get; set; } = null;
+        public string MegaParentNodeId { get; set; } = null;
+
+        #endregion Mega
+
+        #region Amazon S3
+
+        public AmazonS3Settings AmazonS3Settings { get; set; } = new AmazonS3Settings()
         {
-            ObjectPrefix = "ShareX/%y/%mo",
-            UseReducedRedundancyStorage = true
+            ObjectPrefix = "ShareX/%y/%mo"
         };
 
-        // ownCloud
+        #endregion Amazon S3
 
-        public string OwnCloudHost = "";
-        public string OwnCloudUsername = "";
-        public string OwnCloudPassword = "";
-        public string OwnCloudPath = "/";
-        public bool OwnCloudCreateShare = true;
-        public bool OwnCloudDirectLink = false;
-        public bool OwnCloud81Compatibility = false;
+        #region ownCloud / Nextcloud
 
-        // MediaFire
+        public string OwnCloudHost { get; set; } = "";
+        public string OwnCloudUsername { get; set; } = "";
+        [JsonEncrypt]
+        public string OwnCloudPassword { get; set; } = "";
+        public string OwnCloudPath { get; set; } = "/";
+        public int OwnCloudExpiryTime { get; set; } = 7;
+        public bool OwnCloudCreateShare { get; set; } = true;
+        public bool OwnCloudDirectLink { get; set; } = false;
+        public bool OwnCloud81Compatibility { get; set; } = true;
+        public bool OwnCloudUsePreviewLinks { get; set; } = false;
+        public bool OwnCloudAutoExpire { get; set; } = false;
 
-        public string MediaFireUsername = "";
-        public string MediaFirePassword = "";
-        public string MediaFirePath = "";
-        public bool MediaFireUseLongLink = false;
+        #endregion ownCloud / Nextcloud
 
-        // Pushbullet
+        #region MediaFire
 
-        public PushbulletSettings PushbulletSettings = new PushbulletSettings();
+        public string MediaFireUsername { get; set; } = "";
+        [JsonEncrypt]
+        public string MediaFirePassword { get; set; } = "";
+        public string MediaFirePath { get; set; } = "";
+        public bool MediaFireUseLongLink { get; set; } = false;
 
-        // Lambda
+        #endregion MediaFire
 
-        public LambdaSettings LambdaSettings = new LambdaSettings();
+        #region Pushbullet
 
-        // Lithiio
+        public PushbulletSettings PushbulletSettings { get; set; } = new PushbulletSettings();
 
-        public LithiioSettings LithiioSettings = new LithiioSettings();
+        #endregion Pushbullet
 
-        // Pomf
+        #region Lambda
 
-        public PomfUploader PomfUploader = new PomfUploader("https://mixtape.moe/upload.php");
+        public LambdaSettings LambdaSettings { get; set; } = new LambdaSettings();
 
-        // s-ul
+        #endregion Lambda
 
-        public string SulAPIKey = "";
+        #region Lithiio
 
-        // Seafile
+        public LithiioSettings LithiioSettings { get; set; } = new LithiioSettings();
 
-        public string SeafileAPIURL = "";
-        public string SeafileAuthToken = "";
-        public string SeafileRepoID = "";
-        public string SeafilePath = "/";
-        public bool SeafileIsLibraryEncrypted = false;
-        public string SeafileEncryptedLibraryPassword = "";
-        public bool SeafileCreateShareableURL = true;
-        public bool SeafileIgnoreInvalidCert = false;
-        public int SeafileShareDaysToExpire = 0;
-        public string SeafileSharePassword = "";
-        public string SeafileAccInfoEmail = "";
-        public string SeafileAccInfoUsage = "";
+        #endregion Lithiio
 
-        // Streamable
+        #region Teknik
 
-        public bool StreamableAnonymous = true;
-        public string StreamableUsername = "";
-        public string StreamablePassword = "";
-        public bool StreamableUseDirectURL = false;
+        public OAuth2Info TeknikOAuth2Info { get; set; } = null;
+        public string TeknikUploadAPIUrl { get; set; } = Teknik.DefaultUploadAPIURL;
+        public string TeknikPasteAPIUrl { get; set; } = Teknik.DefaultPasteAPIURL;
+        public string TeknikUrlShortenerAPIUrl { get; set; } = Teknik.DefaultUrlShortenerAPIURL;
+        public string TeknikAuthUrl { get; set; } = Teknik.DefaultAuthURL;
+        public TeknikExpirationUnit TeknikExpirationUnit { get; set; } = TeknikExpirationUnit.Never;
+        public int TeknikExpirationLength { get; set; } = 1;
+        public bool TeknikEncryption { get; set; } = false;
+        public bool TeknikGenerateDeletionKey { get; set; } = false;
 
-        // Uplea
+        #endregion Teknik
 
-        public string UpleaApiKey = "";
-        public string UpleaEmailAddress = "";
-        public bool UpleaIsPremiumMember = false;
-        public bool UpleaInstantDownloadEnabled = false;
+        #region Pomf
+
+        public PomfUploader PomfUploader { get; set; } = new PomfUploader();
+
+        #endregion Pomf
+
+        #region s-ul
+
+        [JsonEncrypt]
+        public string SulAPIKey { get; set; } = "";
+
+        #endregion s-ul
+
+        #region Seafile
+
+        public string SeafileAPIURL { get; set; } = "";
+        [JsonEncrypt]
+        public string SeafileAuthToken { get; set; } = "";
+        public string SeafileRepoID { get; set; } = "";
+        public string SeafilePath { get; set; } = "/";
+        public bool SeafileIsLibraryEncrypted { get; set; } = false;
+        [JsonEncrypt]
+        public string SeafileEncryptedLibraryPassword { get; set; } = "";
+        public bool SeafileCreateShareableURL { get; set; } = true;
+        public bool SeafileCreateShareableURLRaw { get; set; } = false;
+        public bool SeafileIgnoreInvalidCert { get; set; } = false;
+        public int SeafileShareDaysToExpire { get; set; } = 0;
+        [JsonEncrypt]
+        public string SeafileSharePassword { get; set; } = "";
+        public string SeafileAccInfoEmail { get; set; } = "";
+        public string SeafileAccInfoUsage { get; set; } = "";
+
+        #endregion Seafile
+
+        #region Streamable
+
+        public bool StreamableAnonymous { get; set; } = true;
+        public string StreamableUsername { get; set; } = "";
+        [JsonEncrypt]
+        public string StreamablePassword { get; set; } = "";
+        public bool StreamableUseDirectURL { get; set; } = false;
+
+        #endregion Streamable
+
+        #region Azure Storage
+
+        public string AzureStorageAccountName { get; set; } = "";
+        [JsonEncrypt]
+        public string AzureStorageAccountAccessKey { get; set; } = "";
+        public string AzureStorageContainer { get; set; } = "";
+        public string AzureStorageEnvironment { get; set; } = "blob.core.windows.net";
+        public string AzureStorageCustomDomain { get; set; } = "";
+        public string AzureStorageUploadPath { get; set; } = "";
+
+        #endregion Azure Storage
+
+        #region Backblaze B2
+
+        public string B2ApplicationKeyId { get; set; } = "";
+        [JsonEncrypt]
+        public string B2ApplicationKey { get; set; } = "";
+        public string B2BucketName { get; set; } = "";
+        public string B2UploadPath { get; set; } = "ShareX/%y/%mo";
+        public bool B2UseCustomUrl { get; set; } = false;
+        public string B2CustomUrl { get; set; } = "https://example.com";
+
+        #endregion Backblaze B2
+
+        #region Plik
+
+        public PlikSettings PlikSettings { get; set; } = new PlikSettings();
+
+        #endregion Plik
+
+        #region YouTube
+
+        public OAuth2Info YouTubeOAuth2Info { get; set; } = null;
+        public YouTubeVideoPrivacy YouTubePrivacyType { get; set; } = YouTubeVideoPrivacy.Public;
+        public bool YouTubeUseShortenedLink { get; set; } = false;
+
+        #endregion YouTube
+
+        #region Google Cloud Storage
+
+        public OAuth2Info GoogleCloudStorageOAuth2Info { get; set; } = null;
+        public string GoogleCloudStorageBucket { get; set; } = "";
+        public string GoogleCloudStorageDomain { get; set; } = "";
+        public string GoogleCloudStorageObjectPrefix { get; set; } = "ShareX/%y/%mo";
+        public bool GoogleCloudStorageRemoveExtensionImage { get; set; } = false;
+        public bool GoogleCloudStorageRemoveExtensionVideo { get; set; } = false;
+        public bool GoogleCloudStorageRemoveExtensionText { get; set; } = false;
+        public bool GoogleCloudStorageSetPublicACL { get; set; } = true;
+
+        #endregion Google Cloud Storage
 
         #endregion File uploaders
 
         #region URL shorteners
 
-        // bit.ly
+        #region bit.ly
 
-        public OAuth2Info BitlyOAuth2Info = null;
-        public string BitlyDomain = "";
+        public OAuth2Info BitlyOAuth2Info { get; set; } = null;
+        public string BitlyDomain { get; set; } = "";
 
-        // Google URL Shortener
+        #endregion bit.ly
 
-        public AccountType GoogleURLShortenerAccountType = AccountType.Anonymous;
-        public OAuth2Info GoogleURLShortenerOAuth2Info = null;
+        #region yourls.org
 
-        // yourls.org
+        public string YourlsAPIURL { get; set; } = "http://yoursite.com/yourls-api.php";
+        [JsonEncrypt]
+        public string YourlsSignature { get; set; } = "";
+        public string YourlsUsername { get; set; } = "";
+        [JsonEncrypt]
+        public string YourlsPassword { get; set; } = "";
 
-        public string YourlsAPIURL = "http://yoursite.com/yourls-api.php";
-        public string YourlsSignature = "";
-        public string YourlsUsername = "";
-        public string YourlsPassword = "";
+        #endregion yourls.org
 
-        // adf.ly
-        public string AdFlyAPIKEY = "";
-        public string AdFlyAPIUID = "";
+        #region adf.ly
 
-        // coinurl.com
-        public string CoinURLUUID = "";
+        public string AdFlyAPIUID { get; set; } = "";
+        [JsonEncrypt]
+        public string AdFlyAPIKEY { get; set; } = "";
 
-        // polr
-        public string PolrAPIHostname = "";
-        public string PolrAPIKey = "";
+        #endregion adf.ly
+
+        #region polr
+
+        public string PolrAPIHostname { get; set; } = "";
+        [JsonEncrypt]
+        public string PolrAPIKey { get; set; } = "";
+        public bool PolrIsSecret { get; set; } = false;
+        public bool PolrUseAPIv1 { get; set; } = false;
+
+        #endregion polr
+
+        #region Firebase Dynamic Links
+
+        [JsonEncrypt]
+        public string FirebaseWebAPIKey { get; set; } = "";
+        public string FirebaseDynamicLinkDomain { get; set; } = "";
+        public bool FirebaseIsShort { get; set; } = false;
+
+        #endregion Firebase Dynamic Links
+
+        #region Kutt
+
+        public KuttSettings KuttSettings { get; set; } = new KuttSettings();
+
+        #endregion Kutt
+
+        #region Zero Width Shortener
+
+        public string ZeroWidthShortenerURL { get; set; } = "https://api.zws.im";
+        public string ZeroWidthShortenerToken { get; set; } = "";
+
+        #endregion
 
         #endregion URL shorteners
 
-        #region URL sharing services
+        #region Other uploaders
 
-        // Twitter
+        #region Twitter
 
-        public List<OAuthInfo> TwitterOAuthInfoList = new List<OAuthInfo>();
-        public int TwitterSelectedAccount = 0;
-        public bool TwitterSkipMessageBox = false;
-        public string TwitterDefaultMessage = "";
+        public List<OAuthInfo> TwitterOAuthInfoList { get; set; } = new List<OAuthInfo>();
+        public int TwitterSelectedAccount { get; set; } = 0;
+        public bool TwitterSkipMessageBox { get; set; } = false;
+        public string TwitterDefaultMessage { get; set; } = "";
 
-        #endregion URL sharing services
+        #endregion Twitter
 
-        #region Custom Uploaders
+        #region Custom uploaders
 
-        public List<CustomUploaderItem> CustomUploadersList = new List<CustomUploaderItem>();
-        public int CustomImageUploaderSelected = 0;
-        public int CustomTextUploaderSelected = 0;
-        public int CustomFileUploaderSelected = 0;
-        public int CustomURLShortenerSelected = 0;
+        public List<CustomUploaderItem> CustomUploadersList { get; set; } = new List<CustomUploaderItem>();
+        public int CustomImageUploaderSelected { get; set; } = 0;
+        public int CustomTextUploaderSelected { get; set; } = 0;
+        public int CustomFileUploaderSelected { get; set; } = 0;
+        public int CustomURLShortenerSelected { get; set; } = 0;
+        public int CustomURLSharingServiceSelected { get; set; } = 0;
 
-        #endregion Custom Uploaders
+        #endregion Custom uploaders
+
+        #endregion Other uploaders
     }
 }

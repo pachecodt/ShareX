@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -39,7 +39,7 @@ namespace ShareX.HelpersLib
         protected override void OnPaint(PaintEventArgs e)
         {
             Graphics g = e.Graphics;
-            Rectangle rect = e.ClipRectangle;
+            Rectangle rect = ClientRectangle;
 
             using (Brush backgroundBrush = new LinearGradientBrush(rect, Color.FromArgb(100, 100, 100), Color.FromArgb(70, 70, 70), LinearGradientMode.Vertical))
             {

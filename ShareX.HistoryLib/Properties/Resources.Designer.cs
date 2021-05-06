@@ -19,7 +19,7 @@ namespace ShareX.HistoryLib.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -71,6 +71,33 @@ namespace ShareX.HistoryLib.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Hide stats.
+        /// </summary>
+        internal static string BtnShowStats_HideStats {
+            get {
+                return ResourceManager.GetString("BtnShowStats_HideStats", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show stats.
+        /// </summary>
+        internal static string BtnShowStats_ShowStats {
+            get {
+                return ResourceManager.GetString("BtnShowStats_ShowStats", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error occured while reading history file:.
+        /// </summary>
+        internal static string ErrorOccuredWhileReadingHistoryFile {
+            get {
+                return ResourceManager.GetString("ErrorOccuredWhileReadingHistoryFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap globe {
@@ -99,6 +126,15 @@ namespace ShareX.HistoryLib.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to History item counts:.
+        /// </summary>
+        internal static string HistoryItemCounts {
+            get {
+                return ResourceManager.GetString("HistoryItemCounts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copy.
         /// </summary>
         internal static string HistoryItemManager_InitializeComponent_Copy {
@@ -113,6 +149,15 @@ namespace ShareX.HistoryLib.Properties {
         internal static string HistoryItemManager_InitializeComponent_Deletion_URL {
             get {
                 return ResourceManager.GetString("HistoryItemManager_InitializeComponent_Deletion_URL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit image....
+        /// </summary>
+        internal static string HistoryItemManager_InitializeComponent_EditImage {
+            get {
+                return ResourceManager.GetString("HistoryItemManager_InitializeComponent_EditImage", resourceCulture);
             }
         }
         
@@ -234,7 +279,34 @@ namespace ShareX.HistoryLib.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to More info.
+        ///   Looks up a localized string similar to Markdown image.
+        /// </summary>
+        internal static string HistoryItemManager_InitializeComponent_Markdown__image {
+            get {
+                return ResourceManager.GetString("HistoryItemManager_InitializeComponent_Markdown__image", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Markdown link.
+        /// </summary>
+        internal static string HistoryItemManager_InitializeComponent_Markdown__link {
+            get {
+                return ResourceManager.GetString("HistoryItemManager_InitializeComponent_Markdown__link", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Markdown linked image.
+        /// </summary>
+        internal static string HistoryItemManager_InitializeComponent_Markdown__linked_image {
+            get {
+                return ResourceManager.GetString("HistoryItemManager_InitializeComponent_Markdown__linked_image", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to More info....
         /// </summary>
         internal static string HistoryItemManager_InitializeComponent_More_info {
             get {
@@ -288,29 +360,20 @@ namespace ShareX.HistoryLib.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Upload file.
+        /// </summary>
+        internal static string HistoryItemManager_InitializeComponent_UploadFile {
+            get {
+                return ResourceManager.GetString("HistoryItemManager_InitializeComponent_UploadFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to URL.
         /// </summary>
         internal static string HistoryItemManager_InitializeComponent_URL {
             get {
                 return ResourceManager.GetString("HistoryItemManager_InitializeComponent_URL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to HTML link ({0}).
-        /// </summary>
-        internal static string HistoryItemManager_UpdateTexts_HTML_link___0__ {
-            get {
-                return ResourceManager.GetString("HistoryItemManager_UpdateTexts_HTML_link___0__", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to URLs ({0}).
-        /// </summary>
-        internal static string HistoryItemManager_UpdateTexts_URLs___0__ {
-            get {
-                return ResourceManager.GetString("HistoryItemManager_UpdateTexts_URLs___0__", resourceCulture);
             }
         }
         
@@ -324,11 +387,38 @@ namespace ShareX.HistoryLib.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error occured while reading XML file: {0}.
+        ///   Looks up a localized string similar to File extensions:.
         /// </summary>
-        internal static string HistoryManager_GetHistoryItems_Error_occured_while_reading_XML_file___0_ {
+        internal static string HistoryStats_FileExtensions {
             get {
-                return ResourceManager.GetString("HistoryManager_GetHistoryItems_Error_occured_while_reading_XML_file___0_", resourceCulture);
+                return ResourceManager.GetString("HistoryStats_FileExtensions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hosts:.
+        /// </summary>
+        internal static string HistoryStats_Hosts {
+            get {
+                return ResourceManager.GetString("HistoryStats_Hosts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Total:.
+        /// </summary>
+        internal static string HistoryStats_Total {
+            get {
+                return ResourceManager.GetString("HistoryStats_Total", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yearly usages:.
+        /// </summary>
+        internal static string HistoryStats_YearlyUsages {
+            get {
+                return ResourceManager.GetString("HistoryStats_YearlyUsages", resourceCulture);
             }
         }
         
@@ -345,46 +435,20 @@ namespace ShareX.HistoryLib.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap notebook {
+        internal static System.Drawing.Bitmap magnifier {
             get {
-                object obj = ResourceManager.GetObject("notebook", resourceCulture);
+                object obj = ResourceManager.GetObject("magnifier", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copy name.
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static string ObjectListView_ObjectListView_Copy_name {
+        internal static System.Drawing.Bitmap notebook {
             get {
-                return ResourceManager.GetString("ObjectListView_ObjectListView_Copy_name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Copy value.
-        /// </summary>
-        internal static string ObjectListView_ObjectListView_Copy_value {
-            get {
-                return ResourceManager.GetString("ObjectListView_ObjectListView_Copy_value", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Name.
-        /// </summary>
-        internal static string ObjectListView_ObjectListView_Name {
-            get {
-                return ResourceManager.GetString("ObjectListView_ObjectListView_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Value.
-        /// </summary>
-        internal static string ObjectListView_ObjectListView_Value {
-            get {
-                return ResourceManager.GetString("ObjectListView_ObjectListView_Value", resourceCulture);
+                object obj = ResourceManager.GetObject("notebook", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }

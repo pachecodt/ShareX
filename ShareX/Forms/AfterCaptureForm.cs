@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -26,7 +26,7 @@
 using ShareX.HelpersLib;
 using ShareX.Properties;
 using System;
-using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -37,12 +37,12 @@ namespace ShareX
         public TaskSettings TaskSettings { get; private set; }
         public string FileName { get; private set; }
 
-        public AfterCaptureForm(Image img, TaskSettings taskSettings)
+        private AfterCaptureForm(TaskSettings taskSettings)
         {
             TaskSettings = taskSettings;
 
             InitializeComponent();
-            Icon = ShareXResources.Icon;
+            ShareXResources.ApplyTheme(this);
 
             ImageList imageList = new ImageList { ColorDepth = ColorDepth.Depth32Bit };
             imageList.Images.Add(Resources.checkbox_uncheck);
@@ -54,20 +54,43 @@ namespace ShareX
 
             AddAfterCaptureItems(TaskSettings.AfterCaptureJob);
             AddAfterUploadItems(TaskSettings.AfterUploadJob);
+        }
 
-            if (img != null)
+        public AfterCaptureForm(ImageInfo imageInfo, TaskSettings taskSettings) : this(taskSettings)
+        {
+            if (imageInfo != null && imageInfo.Image != null)
             {
-                pbImage.LoadImage(img);
+                pbImage.LoadImage(imageInfo.Image);
                 btnCopy.Enabled = true;
             }
 
-            FileName = TaskHelpers.GetFilename(TaskSettings, null, img);
+            FileName = TaskHelpers.GetFilename(TaskSettings, null, imageInfo);
+            txtFileName.Text = FileName;
+        }
+
+        public AfterCaptureForm(string filePath, TaskSettings taskSettings) : this(taskSettings)
+        {
+            if (Helpers.IsImageFile(filePath))
+            {
+                pbImage.LoadImageFromFileAsync(filePath);
+            }
+
+            FileName = Path.GetFileNameWithoutExtension(filePath);
             txtFileName.Text = FileName;
         }
 
         private void AfterCaptureForm_Shown(object sender, EventArgs e)
         {
             this.ForceActivate();
+        }
+
+        private void Continue()
+        {
+            TaskSettings.AfterCaptureJob = GetAfterCaptureTasks();
+            TaskSettings.AfterUploadJob = GetAfterUploadTasks();
+            FileName = txtFileName.Text;
+            DialogResult = DialogResult.OK;
+            Close();
         }
 
         private void CheckItem(ListViewItem lvi, bool check)
@@ -83,6 +106,7 @@ namespace ShareX
         private void AddAfterCaptureItems(AfterCaptureTasks afterCaptureTasks)
         {
             AfterCaptureTasks[] ignore = new AfterCaptureTasks[] { AfterCaptureTasks.None, AfterCaptureTasks.ShowQuickTaskMenu, AfterCaptureTasks.ShowAfterCaptureWindow };
+            int itemHeight = 0;
 
             foreach (AfterCaptureTasks task in Helpers.GetEnums<AfterCaptureTasks>())
             {
@@ -91,7 +115,15 @@ namespace ShareX
                 CheckItem(lvi, afterCaptureTasks.HasFlag(task));
                 lvi.Tag = task;
                 lvAfterCaptureTasks.Items.Add(lvi);
+
+                if (itemHeight == 0)
+                    itemHeight = lvi.Bounds.Height;
             }
+
+            int newListViewHeight = lvAfterCaptureTasks.Items.Count * itemHeight;
+            int listViewHeightDifference = newListViewHeight - lvAfterCaptureTasks.Height;
+            if (listViewHeightDifference > 0)
+                Height += listViewHeightDifference;
         }
 
         private AfterCaptureTasks GetAfterCaptureTasks()
@@ -178,11 +210,25 @@ namespace ShareX
             }
         }
 
+        private void txtFileName_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyData == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+            }
+        }
+
+        private void txtFileName_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyData == Keys.Enter)
+            {
+                Continue();
+            }
+        }
+
         private void btnContinue_Click(object sender, EventArgs e)
         {
-            TaskSettings.AfterCaptureJob = GetAfterCaptureTasks();
-            TaskSettings.AfterUploadJob = GetAfterUploadTasks();
-            FileName = txtFileName.Text;
+            Continue();
         }
 
         private void btnCopy_Click(object sender, EventArgs e)

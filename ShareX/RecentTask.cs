@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -64,13 +64,13 @@ namespace ShareX
             {
                 string text = ToString().Truncate(50, "...", false);
 
-                return string.Format("[{0:HH:mm:ss}] {1}", Time.ToLocalTime(), text);
+                return string.Format("[{0:HH:mm:ss}] {1}", Time, text);
             }
         }
 
         public RecentTask()
         {
-            Time = DateTime.UtcNow;
+            Time = DateTime.Now;
         }
 
         public override string ToString()

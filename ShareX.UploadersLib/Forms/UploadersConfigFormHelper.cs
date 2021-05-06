@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -28,12 +28,10 @@ using ShareX.UploadersLib.FileUploaders;
 using ShareX.UploadersLib.ImageUploaders;
 using ShareX.UploadersLib.Properties;
 using ShareX.UploadersLib.TextUploaders;
-using ShareX.UploadersLib.URLShorteners;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ShareX.UploadersLib
@@ -41,88 +39,6 @@ namespace ShareX.UploadersLib
     public partial class UploadersConfigForm
     {
         #region Imgur
-
-        private void ImgurAuthOpen()
-        {
-            try
-            {
-                OAuth2Info oauth = new OAuth2Info(APIKeys.ImgurClientID, APIKeys.ImgurClientSecret);
-
-                string url = new Imgur(oauth).GetAuthorizationURL();
-
-                if (!string.IsNullOrEmpty(url))
-                {
-                    Config.ImgurOAuth2Info = oauth;
-                    URLHelpers.OpenURL(url);
-                    DebugHelper.WriteLine("ImgurAuthOpen - Authorization URL is opened: " + url);
-                }
-                else
-                {
-                    DebugHelper.WriteLine("ImgurAuthOpen - Authorization URL is empty.");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void ImgurAuthComplete(string code)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(code) && Config.ImgurOAuth2Info != null)
-                {
-                    bool result = new Imgur(Config.ImgurOAuth2Info).GetAccessToken(code);
-
-                    if (result)
-                    {
-                        oauth2Imgur.Status = OAuthLoginStatus.LoginSuccessful;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        oauth2Imgur.Status = OAuthLoginStatus.LoginFailed;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-
-                    btnImgurRefreshAlbumList.Enabled = result;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void ImgurAuthRefresh()
-        {
-            try
-            {
-                if (OAuth2Info.CheckOAuth(Config.ImgurOAuth2Info))
-                {
-                    bool result = new Imgur(Config.ImgurOAuth2Info).RefreshAccessToken();
-
-                    if (result)
-                    {
-                        oauth2Imgur.Status = OAuthLoginStatus.LoginSuccessful;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        oauth2Imgur.Status = OAuthLoginStatus.LoginFailed;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        atcImgurAccountType.SelectedAccountType = AccountType.Anonymous;
-                    }
-
-                    btnImgurRefreshAlbumList.Enabled = result;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
 
         private void ImgurRefreshAlbumList()
         {
@@ -139,7 +55,7 @@ namespace ShareX.UploadersLib
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ex.ShowError();
             }
         }
 
@@ -164,81 +80,54 @@ namespace ShareX.UploadersLib
 
         #region Flickr
 
-        public void FlickrAuthOpen()
+        private void FlickrAuthOpen()
         {
             try
             {
-                FlickrUploader flickr = new FlickrUploader(APIKeys.FlickrKey, APIKeys.FlickrSecret);
-                btnFlickrOpenAuthorize.Tag = flickr.GetFrob();
-                string url = flickr.GetAuthLink(FlickrPermission.Write);
+                OAuthInfo oauth = new OAuthInfo(APIKeys.FlickrKey, APIKeys.FlickrSecret);
+
+                string url = new FlickrUploader(oauth).GetAuthorizationURL();
+
                 if (!string.IsNullOrEmpty(url))
                 {
+                    Config.FlickrOAuthInfo = oauth;
                     URLHelpers.OpenURL(url);
-                    btnFlickrCompleteAuth.Enabled = true;
+                    DebugHelper.WriteLine("FlickrAuthOpen - Authorization URL is opened: " + url);
+                }
+                else
+                {
+                    DebugHelper.WriteLine("FlickrAuthOpen - Authorization URL is empty.");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ex.ShowError();
             }
         }
 
-        public void FlickrAuthComplete()
+        private void FlickrAuthComplete(string code)
         {
             try
             {
-                string token = btnFlickrOpenAuthorize.Tag as string;
-                if (!string.IsNullOrEmpty(token))
+                if (!string.IsNullOrEmpty(code) && Config.FlickrOAuthInfo != null)
                 {
-                    FlickrUploader flickr = new FlickrUploader(APIKeys.FlickrKey, APIKeys.FlickrSecret);
-                    Config.FlickrAuthInfo = flickr.GetToken(token);
-                    pgFlickrAuthInfo.SelectedObject = Config.FlickrAuthInfo;
-                    // btnFlickrOpenImages.Text = string.Format("{0}'s photostream", Config.FlickrAuthInfo.Username);
-                    MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+                    bool result = new FlickrUploader(Config.FlickrOAuthInfo).GetAccessToken(code);
 
-        public void FlickrCheckToken()
-        {
-            try
-            {
-                if (Config.FlickrAuthInfo != null)
-                {
-                    string token = Config.FlickrAuthInfo.Token;
-                    if (!string.IsNullOrEmpty(token))
+                    if (result)
                     {
-                        FlickrUploader flickr = new FlickrUploader(APIKeys.FlickrKey, APIKeys.FlickrSecret);
-                        Config.FlickrAuthInfo = flickr.CheckToken(token);
-                        pgFlickrAuthInfo.SelectedObject = Config.FlickrAuthInfo;
+                        oauthFlickr.Status = OAuthLoginStatus.LoginSuccessful;
                         MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
+                    else
+                    {
+                        oauthFlickr.Status = OAuthLoginStatus.LoginFailed;
+                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        public void FlickrOpenImages()
-        {
-            if (Config.FlickrAuthInfo != null)
-            {
-                string userID = Config.FlickrAuthInfo.UserID;
-                if (!string.IsNullOrEmpty(userID))
-                {
-                    FlickrUploader flickr = new FlickrUploader(APIKeys.FlickrKey, APIKeys.FlickrSecret);
-                    string url = flickr.GetPhotosLink(userID);
-                    if (!string.IsNullOrEmpty(url))
-                    {
-                        URLHelpers.OpenURL(url);
-                    }
-                }
+                ex.ShowError();
             }
         }
 
@@ -262,7 +151,7 @@ namespace ShareX.UploadersLib
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ex.ShowError();
             }
         }
 
@@ -297,7 +186,7 @@ namespace ShareX.UploadersLib
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ex.ShowError();
             }
         }
 
@@ -316,102 +205,21 @@ namespace ShareX.UploadersLib
 
         #endregion Photobucket
 
-        #region Picasa
+        #region Google Photos
 
-        public void PicasaAuthOpen()
-        {
-            try
-            {
-                OAuth2Info oauth = new OAuth2Info(APIKeys.GoogleClientID, APIKeys.GoogleClientSecret);
-
-                string url = new Picasa(oauth).GetAuthorizationURL();
-
-                if (!string.IsNullOrEmpty(url))
-                {
-                    Config.PicasaOAuth2Info = oauth;
-                    URLHelpers.OpenURL(url);
-                    DebugHelper.WriteLine("PicasaAuthOpen - Authorization URL is opened: " + url);
-                }
-                else
-                {
-                    DebugHelper.WriteLine("PicasaAuthOpen - Authorization URL is empty.");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        public void PicasaAuthComplete(string code)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(code) && Config.PicasaOAuth2Info != null)
-                {
-                    bool result = new GoogleDrive(Config.PicasaOAuth2Info).GetAccessToken(code);
-
-                    if (result)
-                    {
-                        oauth2Picasa.Status = OAuthLoginStatus.LoginSuccessful;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        oauth2Picasa.Status = OAuthLoginStatus.LoginFailed;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-
-                    btnPicasaRefreshAlbumList.Enabled = result;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        public void PicasaAuthRefresh()
-        {
-            try
-            {
-                if (OAuth2Info.CheckOAuth(Config.PicasaOAuth2Info))
-                {
-                    bool result = new GoogleDrive(Config.PicasaOAuth2Info).RefreshAccessToken();
-
-                    if (result)
-                    {
-                        oauth2Picasa.Status = OAuthLoginStatus.LoginSuccessful;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        oauth2Picasa.Status = OAuthLoginStatus.LoginFailed;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-
-                    btnPicasaRefreshAlbumList.Enabled = result;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        public void PicasaRefreshAlbumList()
+        public void GooglePhotosRefreshAlbumList()
         {
             try
             {
                 lvPicasaAlbumList.Items.Clear();
 
-                if (OAuth2Info.CheckOAuth(Config.PicasaOAuth2Info))
+                if (OAuth2Info.CheckOAuth(Config.GooglePhotosOAuth2Info))
                 {
-                    List<PicasaAlbumInfo> albums = new Picasa(Config.PicasaOAuth2Info).GetAlbumList();
+                    List<GooglePhotosAlbumInfo> albums = new GooglePhotos(Config.GooglePhotosOAuth2Info).GetAlbumList();
 
                     if (albums != null && albums.Count > 0)
                     {
-                        foreach (PicasaAlbumInfo album in albums)
+                        foreach (GooglePhotosAlbumInfo album in albums)
                         {
                             ListViewItem lvi = new ListViewItem(album.ID);
                             lvi.SubItems.Add(album.Name ?? "");
@@ -424,197 +232,88 @@ namespace ShareX.UploadersLib
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ex.ShowError();
             }
         }
 
-        #endregion Picasa
-
-        #region Dropbox
-
-        public void DropboxAuthOpen()
+        public void GooglePhotosCreateAlbum(string albumName)
         {
-            try
+            if (OAuth2Info.CheckOAuth(Config.GooglePhotosOAuth2Info))
             {
-                OAuth2Info oauth = new OAuth2Info(APIKeys.DropboxConsumerKey, APIKeys.DropboxConsumerSecret);
-
-                string url = new Dropbox(oauth).GetAuthorizationURL();
-
-                if (!string.IsNullOrEmpty(url))
-                {
-                    Config.DropboxOAuth2Info = oauth;
-                    URLHelpers.OpenURL(url);
-                    DebugHelper.WriteLine("DropboxAuthOpen - Authorization URL is opened: " + url);
-                }
-                else
-                {
-                    DebugHelper.WriteLine("DropboxAuthOpen - Authorization URL is empty.");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                new GooglePhotos(Config.GooglePhotosOAuth2Info).CreateAlbum(albumName);
             }
         }
 
-        public void DropboxAuthComplete(string code)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(code) && Config.DropboxOAuth2Info != null)
-                {
-                    Dropbox dropbox = new Dropbox(Config.DropboxOAuth2Info);
-                    bool result = dropbox.GetAccessToken(code);
-
-                    if (result)
-                    {
-                        Config.DropboxAccountInfo = dropbox.GetCurrentAccountAPIv1();
-                        UpdateDropboxStatus();
-
-                        oauth2Dropbox.Status = OAuthLoginStatus.LoginSuccessful;
-
-                        if (Config.DropboxAccountInfo != null)
-                        {
-                            MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
-                        else
-                        {
-                            MessageBox.Show(Resources.UploadersConfigForm_DropboxAuthComplete_Login_successful_but_getting_account_info_failed_, "ShareX",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-
-                        return;
-                    }
-                    else
-                    {
-                        oauth2Dropbox.Status = OAuthLoginStatus.LoginFailed;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-
-                Config.DropboxAccountInfo = null;
-                UpdateDropboxStatus();
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.WriteException(ex);
-                MessageBox.Show(ex.ToString(), "ShareX - " + Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void UpdateDropboxStatus()
-        {
-            if (OAuth2Info.CheckOAuth(Config.DropboxOAuth2Info) && Config.DropboxAccountInfo != null)
-            {
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine(Resources.UploadersConfigForm_UpdateDropboxStatus_Email_ + " " + Config.DropboxAccountInfo.Email);
-                sb.AppendLine(Resources.UploadersConfigForm_UpdateDropboxStatus_Name_ + " " + Config.DropboxAccountInfo.Display_name);
-                sb.AppendLine(Resources.UploadersConfigForm_UpdateDropboxStatus_User_ID_ + " " + Config.DropboxAccountInfo.Uid);
-                string uploadPath = NameParser.Parse(NameParserType.URL, Dropbox.VerifyPath(Config.DropboxUploadPath));
-                sb.AppendLine(Resources.UploadersConfigForm_UpdateDropboxStatus_Upload_path_ + " " + uploadPath);
-                sb.AppendLine(Resources.UploadersConfigForm_UpdateDropboxStatus_Download_path_ + " " +
-                    Dropbox.GetPublicURL(Config.DropboxAccountInfo.Uid.ToString(), URLHelpers.CombineURL(uploadPath, "Example.png")));
-                lblDropboxStatus.Text = sb.ToString();
-            }
-            else
-            {
-                lblDropboxStatus.Text = "";
-            }
-        }
-
-        #endregion Dropbox
+        #endregion Google Photos
 
         #region Amazon S3
 
         private void UpdateAmazonS3Status()
         {
-            lblAmazonS3PathPreview.Text = new AmazonS3(Config.AmazonS3Settings).GetURL("Example.png");
+            AmazonS3 s3 = new AmazonS3(Config.AmazonS3Settings);
+
+            lblAmazonS3PathPreview.Text = s3.GetPreviewURL();
         }
 
         #endregion Amazon S3
 
+        #region Google Cloud Storage
+
+        private void UpdateGoogleCloudStorageStatus()
+        {
+            GoogleCloudStorage gcs = new GoogleCloudStorage(Config.GoogleCloudStorageOAuth2Info)
+            {
+                Bucket = Config.GoogleCloudStorageBucket,
+                Domain = Config.GoogleCloudStorageDomain,
+                Prefix = Config.GoogleCloudStorageObjectPrefix,
+                RemoveExtensionImage = Config.GoogleCloudStorageRemoveExtensionImage,
+                RemoveExtensionText = Config.GoogleCloudStorageRemoveExtensionText,
+                RemoveExtensionVideo = Config.GoogleCloudStorageRemoveExtensionVideo,
+                SetPublicACL = Config.GoogleCloudStorageSetPublicACL
+            };
+
+            lblGoogleCloudStoragePathPreview.Text = gcs.GetPreviewURL();
+        }
+
+        #endregion Google Cloud Storage
+
+        #region Azure Storage
+
+        private void UpdateAzureStorageStatus()
+        {
+            AzureStorage azure = new AzureStorage(Config.AzureStorageAccountName, Config.AzureStorageAccountAccessKey, Config.AzureStorageContainer,
+                Config.AzureStorageEnvironment, Config.AzureStorageCustomDomain, Config.AzureStorageUploadPath);
+
+            lblAzureStorageURLPreview.Text = azure.GetPreviewURL();
+        }
+
+        #endregion Azure Storage
+
+        #region Backblaze B2
+
+        private void B2UpdateCustomDomainPreview()
+        {
+            string uploadPath = NameParser.Parse(NameParserType.FolderPath, Config.B2UploadPath);
+            string url;
+
+            if (cbB2CustomUrl.Checked)
+            {
+                string customUrl = NameParser.Parse(NameParserType.FolderPath, Config.B2CustomUrl);
+                url = URLHelpers.CombineURL(customUrl, uploadPath, "example.png");
+                url = URLHelpers.FixPrefix(url, "https://");
+            }
+            else
+            {
+                string bucket = string.IsNullOrEmpty(Config.B2BucketName) ? "[bucket]" : URLHelpers.URLEncode(Config.B2BucketName);
+                url = URLHelpers.CombineURL("https://f001.backblazeb2.com/file", bucket, uploadPath, "example.png");
+            }
+
+            lblB2UrlPreview.Text = url;
+        }
+
+        #endregion Backblaze B2
+
         #region Google Drive
-
-        public void GoogleDriveAuthOpen()
-        {
-            try
-            {
-                OAuth2Info oauth = new OAuth2Info(APIKeys.GoogleClientID, APIKeys.GoogleClientSecret);
-
-                string url = new GoogleDrive(oauth).GetAuthorizationURL();
-
-                if (!string.IsNullOrEmpty(url))
-                {
-                    Config.GoogleDriveOAuth2Info = oauth;
-                    URLHelpers.OpenURL(url);
-                    DebugHelper.WriteLine("GoogleDriveAuthOpen - Authorization URL is opened: " + url);
-                }
-                else
-                {
-                    DebugHelper.WriteLine("GoogleDriveAuthOpen - Authorization URL is empty.");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        public void GoogleDriveAuthComplete(string code)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(code) && Config.GoogleDriveOAuth2Info != null)
-                {
-                    bool result = new GoogleDrive(Config.GoogleDriveOAuth2Info).GetAccessToken(code);
-
-                    if (result)
-                    {
-                        oauth2GoogleDrive.Status = OAuthLoginStatus.LoginSuccessful;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        oauth2GoogleDrive.Status = OAuthLoginStatus.LoginFailed;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-
-                    btnGoogleDriveRefreshFolders.Enabled = result;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        public void GoogleDriveAuthRefresh()
-        {
-            try
-            {
-                if (OAuth2Info.CheckOAuth(Config.GoogleDriveOAuth2Info))
-                {
-                    bool result = new GoogleDrive(Config.GoogleDriveOAuth2Info).RefreshAccessToken();
-
-                    if (result)
-                    {
-                        oauth2GoogleDrive.Status = OAuthLoginStatus.LoginSuccessful;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        oauth2GoogleDrive.Status = OAuthLoginStatus.LoginFailed;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-
-                    btnGoogleDriveRefreshFolders.Enabled = result;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
 
         private void GoogleDriveRefreshFolders()
         {
@@ -624,13 +323,13 @@ namespace ShareX.UploadersLib
 
                 if (OAuth2Info.CheckOAuth(Config.GoogleDriveOAuth2Info))
                 {
-                    List<GoogleDriveFile> folders = new GoogleDrive(Config.GoogleDriveOAuth2Info).GetFolders();
+                    List<GoogleDriveFile> folders = new GoogleDrive(Config.GoogleDriveOAuth2Info).GetFolders(Config.GoogleDriveSelectedDrive.id);
 
                     if (folders != null)
                     {
                         foreach (GoogleDriveFile folder in folders)
                         {
-                            ListViewItem lvi = new ListViewItem(folder.title);
+                            ListViewItem lvi = new ListViewItem(folder.name);
                             lvi.SubItems.Add(folder.description);
                             lvi.Tag = folder;
                             lvGoogleDriveFoldersList.Items.Add(lvi);
@@ -640,94 +339,49 @@ namespace ShareX.UploadersLib
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ex.ShowError();
             }
+        }
+
+        private void GoogleDriveRefreshDrives()
+        {
+            try
+            {
+                if (OAuth2Info.CheckOAuth(Config.GoogleDriveOAuth2Info))
+                {
+                    List<GoogleDriveSharedDrive> drives = new GoogleDrive(Config.GoogleDriveOAuth2Info).GetDrives();
+
+                    if (drives != null)
+                    {
+                        cbGoogleDriveSharedDrive.Items.Clear();
+                        cbGoogleDriveSharedDrive.Items.Add(GoogleDrive.MyDrive);
+
+                        foreach (GoogleDriveSharedDrive drive in drives)
+                        {
+                            cbGoogleDriveSharedDrive.Items.Add(drive);
+                        }
+                        GoogleDriveSelectConfigDrive();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ex.ShowError();
+            }
+        }
+
+        private void GoogleDriveSelectConfigDrive()
+        {
+            string driveID = Config.GoogleDriveSelectedDrive?.id;
+            cbGoogleDriveSharedDrive.SelectedItem = cbGoogleDriveSharedDrive.Items
+                .OfType<GoogleDriveSharedDrive>()
+                .Where(x => x.id == driveID)
+                .FirstOrDefault();
         }
 
         #endregion Google Drive
 
         #region Box
-
-        public void BoxAuthOpen()
-        {
-            try
-            {
-                OAuth2Info oauth = new OAuth2Info(APIKeys.BoxClientID, APIKeys.BoxClientSecret);
-
-                string url = new Box(oauth).GetAuthorizationURL();
-
-                if (!string.IsNullOrEmpty(url))
-                {
-                    Config.BoxOAuth2Info = oauth;
-                    URLHelpers.OpenURL(url);
-                    DebugHelper.WriteLine("BoxAuthOpen - Authorization URL is opened: " + url);
-                }
-                else
-                {
-                    DebugHelper.WriteLine("BoxAuthOpen - Authorization URL is empty.");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        public void BoxAuthComplete(string code)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(code) && Config.BoxOAuth2Info != null)
-                {
-                    bool result = new Box(Config.BoxOAuth2Info).GetAccessToken(code);
-
-                    if (result)
-                    {
-                        oauth2Box.Status = OAuthLoginStatus.LoginSuccessful;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        oauth2Box.Status = OAuthLoginStatus.LoginFailed;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-
-                    btnBoxRefreshFolders.Enabled = result;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        public void BoxAuthRefresh()
-        {
-            try
-            {
-                if (OAuth2Info.CheckOAuth(Config.BoxOAuth2Info))
-                {
-                    bool result = new Box(Config.BoxOAuth2Info).RefreshAccessToken();
-
-                    if (result)
-                    {
-                        oauth2Box.Status = OAuthLoginStatus.LoginSuccessful;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        oauth2Box.Status = OAuthLoginStatus.LoginFailed;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-
-                    btnBoxRefreshFolders.Enabled = result;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
 
         public void BoxListFolders()
         {
@@ -768,94 +422,13 @@ namespace ShareX.UploadersLib
 
         #region OneDrive
 
-        public void OneDriveAuthOpen()
-        {
-            try
-            {
-                OAuth2Info oauth = new OAuth2Info(APIKeys.OneDriveClientID, APIKeys.OneDriveClientSecret);
-                string url = new OneDrive(oauth).GetAuthorizationURL();
-
-                if (!string.IsNullOrEmpty(url))
-                {
-                    Config.OneDriveOAuth2Info = oauth;
-                    URLHelpers.OpenURL(url);
-                    DebugHelper.WriteLine("OneDriveAuthOpen - Authorization URL is opened: " + url);
-                }
-                else
-                {
-                    DebugHelper.WriteLine("OneDriveAuthOpen - Authorization URL is empty.");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), "ShareX - " + Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        public void OneDriveAuthComplete(string code)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(code) && Config.OneDriveOAuth2Info != null)
-                {
-                    bool result = new OneDrive(Config.OneDriveOAuth2Info).GetAccessToken(code);
-
-                    if (result)
-                    {
-                        oAuth2OneDrive.Status = OAuthLoginStatus.LoginSuccessful;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        oAuth2OneDrive.Status = OAuthLoginStatus.LoginFailed;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-
-                    tvOneDrive.Enabled = result;
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.WriteException(ex);
-                MessageBox.Show(ex.ToString(), "ShareX - " + Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        public void OneDriveAuthRefresh()
-        {
-            try
-            {
-                if (OAuth2Info.CheckOAuth(Config.OneDriveOAuth2Info))
-                {
-                    bool result = new OneDrive(Config.OneDriveOAuth2Info).RefreshAccessToken();
-
-                    if (result)
-                    {
-                        oAuth2OneDrive.Status = OAuthLoginStatus.LoginSuccessful;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        oAuth2OneDrive.Status = OAuthLoginStatus.LoginFailed;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-
-                    tvOneDrive.Enabled = result;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
         public void OneDriveListFolders(OneDriveFileInfo fileEntry, TreeNode tnParent)
         {
             Application.DoEvents();
-            OneDrive oneDrive = new OneDrive(Config.OneDriveOAuth2Info);
-            OneDrivePathInfo oneDrivePathInfo = oneDrive.GetPathInfo(fileEntry.id);
+            OneDrive oneDrive = new OneDrive(Config.OneDriveV2OAuth2Info);
+            OneDriveFileList oneDrivePathInfo = oneDrive.GetPathInfo(fileEntry.id);
             tnParent.Nodes.Clear();
-            foreach (OneDriveFileInfo folder in oneDrivePathInfo.data.Where(x => x.id.StartsWith("folder.")))
+            foreach (OneDriveFileInfo folder in oneDrivePathInfo.value)
             {
                 OneDriveAddFolder(folder, tnParent);
             }
@@ -879,172 +452,184 @@ namespace ShareX.UploadersLib
 
         #endregion OneDrive
 
-        #region Minus
-
-        public void MinusAuth()
-        {
-            if (!string.IsNullOrEmpty(txtMinusUsername.Text) && !string.IsNullOrEmpty(txtMinusPassword.Text))
-            {
-                btnMinusAuth.Enabled = false;
-                btnMinusRefreshAuth.Enabled = false;
-
-                try
-                {
-                    Config.MinusConfig.Username = txtMinusUsername.Text;
-                    Config.MinusConfig.Password = txtMinusPassword.Text;
-                    Config.MinusOAuth2Info = new OAuth2Info(APIKeys.MinusConsumerKey, APIKeys.MinusConsumerSecret);
-                    Minus minus = new Minus(Config.MinusConfig, Config.MinusOAuth2Info);
-
-                    if (minus.GetAccessToken())
-                    {
-                        minus.ReadFolderList();
-                        MinusUpdateControls();
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(Resources.UploadersConfigForm_Error + ": " + ex.Message, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                finally
-                {
-                    btnMinusAuth.Enabled = true;
-                    btnMinusRefreshAuth.Enabled = true;
-                }
-            }
-        }
-
-        public void MinusAuthRefresh()
-        {
-            btnMinusAuth.Enabled = false;
-            btnMinusRefreshAuth.Enabled = false;
-
-            try
-            {
-                if (OAuth2Info.CheckOAuth(Config.MinusOAuth2Info))
-                {
-                    bool result = new Minus(Config.MinusConfig, Config.MinusOAuth2Info).RefreshAccessToken();
-
-                    if (result)
-                    {
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                btnMinusAuth.Enabled = true;
-                btnMinusRefreshAuth.Enabled = true;
-            }
-        }
-
-        public void MinusUpdateControls()
-        {
-            if (Config.MinusConfig != null && Config.MinusConfig.MinusUser != null && OAuth2Info.CheckOAuth(Config.MinusOAuth2Info))
-            {
-                lblMinusAuthStatus.Text = string.Format(Resources.UploadersConfigForm_MinusUpdateControls_Logged_in_as__0__, Config.MinusConfig.MinusUser.display_name);
-                txtMinusUsername.Text = Config.MinusConfig.Username;
-                txtMinusPassword.Text = Config.MinusConfig.Password;
-                cboMinusFolders.Items.Clear();
-                if (Config.MinusConfig.FolderList.Count > 0)
-                {
-                    cboMinusFolders.Items.AddRange(Config.MinusConfig.FolderList.ToArray());
-                    cboMinusFolders.SelectedIndex = Config.MinusConfig.FolderID.BetweenOrDefault(0, cboMinusFolders.Items.Count - 1);
-                }
-                cbMinusURLType.SelectedIndex = (int)Config.MinusConfig.LinkType;
-            }
-            else
-            {
-                lblMinusAuthStatus.Text = Resources.UploadersConfigForm_MinusUpdateControls_Not_logged_in_;
-                btnMinusRefreshAuth.Enabled = false;
-            }
-        }
-
-        private bool MinusHasFolder(string name)
-        {
-            return cboMinusFolders.Items.Cast<MinusFolder>().Any(mf => mf.name == name);
-        }
-
-        #endregion Minus
-
         #region FTP
 
-        public bool CheckFTPAccounts()
+        private bool FTPCheckAccount(int index)
         {
-            return Config.FTPAccountList.IsValidIndex(Config.FTPSelectedImage);
+            return Config.FTPAccountList.IsValidIndex(index);
         }
 
-        public FTPAccount GetSelectedFTPAccount()
+        private FTPAccount FTPGetSelectedAccount()
         {
-            if (CheckFTPAccounts())
+            int index = cbFTPAccounts.SelectedIndex;
+
+            if (FTPCheckAccount(index))
             {
-                return Config.FTPAccountList[ucFTPAccounts.lbAccounts.SelectedIndex];
+                return Config.FTPAccountList[index];
             }
 
             return null;
         }
 
-        public void AddFTPAccount(FTPAccount account)
+        private void FTPAddAccount(FTPAccount account)
         {
             if (account != null)
             {
                 Config.FTPAccountList.Add(account);
-                ucFTPAccounts.AddItem(account);
-                FTPSetup(Config.FTPAccountList);
+                cbFTPAccounts.Items.Add(account);
+                FTPUpdateControls();
             }
         }
 
-        public void TestFTPAccountAsync(FTPAccount acc)
+        private void FTPUpdateControls()
         {
-            if (acc != null)
+            int selected = cbFTPAccounts.SelectedIndex;
+
+            cbFTPAccounts.Items.Clear();
+            cbFTPImage.Items.Clear();
+            cbFTPText.Items.Clear();
+            cbFTPFile.Items.Clear();
+
+            if (Config.FTPAccountList.Count > 0)
             {
-                ucFTPAccounts.btnTest.Enabled = false;
+                foreach (FTPAccount account in Config.FTPAccountList)
+                {
+                    cbFTPAccounts.Items.Add(account);
+                    cbFTPImage.Items.Add(account);
+                    cbFTPText.Items.Add(account);
+                    cbFTPFile.Items.Add(account);
+                }
 
-                TaskEx.Run(() =>
-                {
-                    TestFTPAccount(acc);
-                },
-                () =>
-                {
-                    ucFTPAccounts.btnTest.Enabled = true;
-                });
+                cbFTPAccounts.SelectedIndex = selected.Clamp(0, Config.FTPAccountList.Count - 1);
+                cbFTPImage.SelectedIndex = Config.FTPSelectedImage.Clamp(0, Config.FTPAccountList.Count - 1);
+                cbFTPText.SelectedIndex = Config.FTPSelectedText.Clamp(0, Config.FTPAccountList.Count - 1);
+                cbFTPFile.SelectedIndex = Config.FTPSelectedFile.Clamp(0, Config.FTPAccountList.Count - 1);
             }
+
+            FTPUpdateEnabledStates();
         }
 
-        private void FTPOpenClient()
+        private void FTPUpdateEnabledStates()
         {
-            FTPAccount account = GetSelectedFTPAccount();
+            cbFTPImage.Enabled = cbFTPText.Enabled = cbFTPFile.Enabled = cbFTPAccounts.Enabled = cbFTPAccounts.Items.Count > 0;
+            btnFTPRemove.Enabled = btnFTPDuplicate.Enabled = gbFTPAccount.Enabled = cbFTPAccounts.SelectedIndex > -1;
+
+            FTPAccount account = FTPGetSelectedAccount();
 
             if (account != null)
             {
-                if (account.Protocol == FTPProtocol.FTP || account.Protocol == FTPProtocol.FTPS)
-                {
-                    new FTPClientForm(account).Show();
-                }
-                else
-                {
-                    MessageBox.Show(Resources.UploadersConfigForm_FTPOpenClient_FTP_client_only_supports_FTP_or_FTPS_, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-
-                return;
+                gbFTPS.Visible = account.Protocol == FTPProtocol.FTPS;
+                gbSFTP.Visible = account.Protocol == FTPProtocol.SFTP;
+                pFTPTransferMode.Enabled = account.Protocol == FTPProtocol.FTP || account.Protocol == FTPProtocol.FTPS;
             }
-
-            MessageBox.Show(Resources.UploadersConfigForm_FTPOpenClient_Unable_to_find_valid_FTP_account_, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            else
+            {
+                gbFTPS.Visible = gbSFTP.Visible = false;
+            }
         }
 
-        public static void TestFTPAccount(FTPAccount account)
+        private void FTPRefreshNames()
+        {
+            cbFTPAccounts.RefreshItems();
+            cbFTPImage.RefreshItems();
+            cbFTPText.RefreshItems();
+            cbFTPFile.RefreshItems();
+        }
+
+        private void FTPLoadSelectedAccount()
+        {
+            FTPAccount account = FTPGetSelectedAccount();
+
+            if (account != null)
+            {
+                FTPLoadAccount(account);
+            }
+        }
+
+        private void FTPLoadAccount(FTPAccount account)
+        {
+            txtFTPName.Text = account.Name;
+
+            switch (account.Protocol)
+            {
+                case FTPProtocol.FTP:
+                    rbFTPProtocolFTP.Checked = true;
+                    break;
+                case FTPProtocol.FTPS:
+                    rbFTPProtocolFTPS.Checked = true;
+                    break;
+                case FTPProtocol.SFTP:
+                    rbFTPProtocolSFTP.Checked = true;
+                    break;
+            }
+
+            txtFTPHost.Text = account.Host;
+            nudFTPPort.Value = account.Port;
+            txtFTPUsername.Text = account.Username;
+            txtFTPPassword.Text = account.Password;
+
+            if (account.IsActive)
+            {
+                rbFTPTransferModeActive.Checked = true;
+            }
+            else
+            {
+                rbFTPTransferModePassive.Checked = true;
+            }
+
+            txtFTPRemoteDirectory.Text = account.SubFolderPath;
+            cbFTPURLPathProtocol.SelectedIndex = (int)account.BrowserProtocol;
+            txtFTPURLPath.Text = account.HttpHomePath;
+            cbFTPAppendRemoteDirectory.Checked = account.HttpHomePathAutoAddSubFolderPath;
+            cbFTPRemoveFileExtension.Checked = account.HttpHomePathNoExtension;
+            lblFTPURLPreviewValue.Text = account.PreviewHttpPath;
+
+            cbFTPSEncryption.SelectedIndex = (int)account.FTPSEncryption;
+            txtFTPSCertificateLocation.Text = account.FTPSCertificateLocation;
+
+            txtSFTPKeyLocation.Text = account.Keypath;
+            txtSFTPKeyPassphrase.Text = account.Passphrase;
+
+            FTPUpdateEnabledStates();
+        }
+
+        private void FTPClearFields()
+        {
+            FTPAccount account = new FTPAccount()
+            {
+                Name = "",
+                HttpHomePathAutoAddSubFolderPath = false
+            };
+
+            FTPLoadAccount(account);
+        }
+
+        private void FTPUpdateURLPreview()
+        {
+            FTPAccount account = FTPGetSelectedAccount();
+
+            if (account != null)
+            {
+                lblFTPURLPreviewValue.Text = account.PreviewHttpPath;
+            }
+        }
+
+        private async Task FTPTestAccountAsync(FTPAccount account)
+        {
+            if (account != null)
+            {
+                btnFTPTest.Enabled = false;
+
+                await Task.Run(() =>
+                {
+                    FTPTestAccount(account);
+                });
+
+                btnFTPTest.Enabled = true;
+            }
+        }
+
+        private void FTPTestAccount(FTPAccount account)
         {
             string msg = "";
             string remotePath = account.GetSubFolderPath();
@@ -1148,7 +733,7 @@ namespace ShareX.UploadersLib
             {
                 Config.Ge_ttLogin = null;
                 lblGe_ttStatus.Text = Resources.UploadersConfigForm_Login_failed;
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ex.ShowError();
             }
         }
 
@@ -1177,7 +762,7 @@ namespace ShareX.UploadersLib
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ex.ShowError();
                 }
             }
         }
@@ -1186,11 +771,11 @@ namespace ShareX.UploadersLib
         {
             if (Config.PastebinSettings == null || string.IsNullOrEmpty(Config.PastebinSettings.UserKey))
             {
-                lblPastebinLoginStatus.Text = Resources.OAuthControl_Status_Status__Not_logged_in_;
+                lblPastebinLoginStatus.Text = Resources.UploadersConfigForm_UpdatePastebinStatus_NotLoggedIn;
             }
             else
             {
-                lblPastebinLoginStatus.Text = Resources.OAuthControl_Status_Status__Logged_in_;
+                lblPastebinLoginStatus.Text = Resources.UploadersConfigForm_UpdatePastebinStatus_LoggedIn;
             }
         }
 
@@ -1214,7 +799,10 @@ namespace ShareX.UploadersLib
 
                 Config.PushbulletSettings.DeviceList.ForEach(pbDevice =>
                 {
-                    cboPushbulletDevices.Items.Add(pbDevice.Name ?? Resources.UploadersConfigForm_LoadSettings_Invalid_device_name);
+                    if (!string.IsNullOrEmpty(pbDevice.Name))
+                    {
+                        cboPushbulletDevices.Items.Add(pbDevice.Name);
+                    }
                 });
 
                 cboPushbulletDevices.SelectedIndex = 0;
@@ -1292,7 +880,7 @@ namespace ShareX.UploadersLib
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ex.ShowError();
                 }
             }
         }
@@ -1324,7 +912,7 @@ namespace ShareX.UploadersLib
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ex.ShowError();
                 }
             }
         }
@@ -1348,481 +936,6 @@ namespace ShareX.UploadersLib
 
         #endregion Twitter
 
-        #region goo.gl
-
-        public void GoogleURLShortenerAuthOpen()
-        {
-            try
-            {
-                OAuth2Info oauth = new OAuth2Info(APIKeys.GoogleClientID, APIKeys.GoogleClientSecret);
-
-                string url = new GoogleURLShortener(oauth).GetAuthorizationURL();
-
-                if (!string.IsNullOrEmpty(url))
-                {
-                    Config.GoogleURLShortenerOAuth2Info = oauth;
-                    URLHelpers.OpenURL(url);
-                    DebugHelper.WriteLine("GoogleURLShortenerAuthOpen - Authorization URL is opened: " + url);
-                }
-                else
-                {
-                    DebugHelper.WriteLine("GoogleURLShortenerAuthOpen - Authorization URL is empty.");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        public void GoogleURLShortenerAuthComplete(string code)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(code) && Config.GoogleURLShortenerOAuth2Info != null)
-                {
-                    bool result = new GoogleDrive(Config.GoogleURLShortenerOAuth2Info).GetAccessToken(code);
-
-                    if (result)
-                    {
-                        oauth2GoogleURLShortener.Status = OAuthLoginStatus.LoginSuccessful;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        oauth2GoogleURLShortener.Status = OAuthLoginStatus.LoginFailed;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        public void GoogleURLShortenerAuthRefresh()
-        {
-            try
-            {
-                if (OAuth2Info.CheckOAuth(Config.GoogleURLShortenerOAuth2Info))
-                {
-                    bool result = new GoogleDrive(Config.GoogleURLShortenerOAuth2Info).RefreshAccessToken();
-
-                    if (result)
-                    {
-                        oauth2GoogleURLShortener.Status = OAuthLoginStatus.LoginSuccessful;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        oauth2GoogleURLShortener.Status = OAuthLoginStatus.LoginFailed;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        #endregion goo.gl
-
-        #region bit.ly
-
-        public void BitlyAuthOpen()
-        {
-            try
-            {
-                OAuth2Info oauth = new OAuth2Info(APIKeys.BitlyClientID, APIKeys.BitlyClientSecret);
-
-                string url = new BitlyURLShortener(oauth).GetAuthorizationURL();
-
-                if (!string.IsNullOrEmpty(url))
-                {
-                    Config.BitlyOAuth2Info = oauth;
-                    URLHelpers.OpenURL(url);
-                    DebugHelper.WriteLine("BitlyAuthOpen - Authorization URL is opened: " + url);
-                }
-                else
-                {
-                    DebugHelper.WriteLine("BitlyAuthOpen - Authorization URL is empty.");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        public void BitlyAuthComplete(string code)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(code) && Config.BitlyOAuth2Info != null)
-                {
-                    bool result = new BitlyURLShortener(Config.BitlyOAuth2Info).GetAccessToken(code);
-
-                    if (result)
-                    {
-                        oauth2Bitly.Status = OAuthLoginStatus.LoginSuccessful;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        oauth2Bitly.Status = OAuthLoginStatus.LoginFailed;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        #endregion bit.ly
-
-        #region Custom uploader
-
-        private void UpdateCustomUploader()
-        {
-            int index = lbCustomUploaderList.SelectedIndex;
-
-            if (index >= 0)
-            {
-                CustomUploaderItem customUploader = GetCustomUploaderFromFields();
-
-                if (customUploader != null && !string.IsNullOrEmpty(customUploader.Name))
-                {
-                    Config.CustomUploadersList[index] = customUploader;
-                    lbCustomUploaderList.Items[index] = customUploader.Name;
-                    PrepareCustomUploaderList();
-                }
-            }
-        }
-
-        private CustomUploaderItem GetSelectedCustomUploader()
-        {
-            if (lbCustomUploaderList.SelectedIndex >= 0)
-            {
-                CustomUploaderItem customUploader = GetCustomUploaderFromFields();
-
-                if (customUploader != null && !string.IsNullOrEmpty(customUploader.Name))
-                {
-                    return customUploader;
-                }
-            }
-
-            return null;
-        }
-
-        private void AddCustomUploader(CustomUploaderItem customUploader)
-        {
-            if (customUploader != null && !string.IsNullOrEmpty(customUploader.Name))
-            {
-                Config.CustomUploadersList.Add(customUploader);
-                lbCustomUploaderList.Items.Add(customUploader.Name);
-                lbCustomUploaderList.SelectedIndex = lbCustomUploaderList.Items.Count - 1;
-                PrepareCustomUploaderList();
-            }
-        }
-
-        private void CustomUploaderClearUploaders()
-        {
-            Config.CustomUploadersList.Clear();
-            lbCustomUploaderList.Items.Clear();
-            CustomUploaderClearFields();
-            Config.CustomImageUploaderSelected = Config.CustomTextUploaderSelected = Config.CustomFileUploaderSelected = Config.CustomURLShortenerSelected = 0;
-            PrepareCustomUploaderList();
-        }
-
-        private void CustomUploaderClearFields()
-        {
-            LoadCustomUploader(new CustomUploaderItem());
-        }
-
-        private void CustomUploaderExportAll()
-        {
-            if (Config.CustomUploadersList != null)
-            {
-                for (int i = 0; i < lbCustomUploaderList.Items.Count; i++)
-                {
-                    lbCustomUploaderList.SelectedIndex = i;
-                    UpdateCustomUploader();
-                }
-
-                using (FolderSelectDialog fsd = new FolderSelectDialog())
-                {
-                    if (fsd.ShowDialog())
-                    {
-                        foreach (CustomUploaderItem item in Config.CustomUploadersList)
-                        {
-                            string json = eiCustomUploaders.Serialize(item);
-                            string filepath = Path.Combine(fsd.FileName, item.Name + ".json");
-                            File.WriteAllText(filepath, json, Encoding.UTF8);
-                        }
-                    }
-                }
-            }
-        }
-
-        private void CustomUploaderFixSelectedUploader(int removedIndex)
-        {
-            if (Config.CustomImageUploaderSelected == removedIndex) Config.CustomImageUploaderSelected = 0;
-            else if (Config.CustomImageUploaderSelected > removedIndex) Config.CustomImageUploaderSelected--;
-
-            if (Config.CustomTextUploaderSelected == removedIndex) Config.CustomTextUploaderSelected = 0;
-            else if (Config.CustomTextUploaderSelected > removedIndex) Config.CustomTextUploaderSelected--;
-
-            if (Config.CustomFileUploaderSelected == removedIndex) Config.CustomFileUploaderSelected = 0;
-            else if (Config.CustomFileUploaderSelected > removedIndex) Config.CustomFileUploaderSelected--;
-
-            if (Config.CustomURLShortenerSelected == removedIndex) Config.CustomURLShortenerSelected = 0;
-            else if (Config.CustomURLShortenerSelected > removedIndex) Config.CustomURLShortenerSelected--;
-        }
-
-        private void PrepareCustomUploaderList()
-        {
-            cbCustomUploaderImageUploader.Items.Clear();
-            cbCustomUploaderTextUploader.Items.Clear();
-            cbCustomUploaderFileUploader.Items.Clear();
-            cbCustomUploaderURLShortener.Items.Clear();
-
-            foreach (CustomUploaderItem item in Config.CustomUploadersList)
-            {
-                cbCustomUploaderImageUploader.Items.Add(item);
-                cbCustomUploaderTextUploader.Items.Add(item);
-                cbCustomUploaderFileUploader.Items.Add(item);
-                cbCustomUploaderURLShortener.Items.Add(item);
-            }
-
-            if (Config.CustomUploadersList.IsValidIndex(Config.CustomImageUploaderSelected))
-            {
-                cbCustomUploaderImageUploader.SelectedIndex = Config.CustomImageUploaderSelected;
-            }
-
-            if (Config.CustomUploadersList.IsValidIndex(Config.CustomTextUploaderSelected))
-            {
-                cbCustomUploaderTextUploader.SelectedIndex = Config.CustomTextUploaderSelected;
-            }
-
-            if (Config.CustomUploadersList.IsValidIndex(Config.CustomFileUploaderSelected))
-            {
-                cbCustomUploaderFileUploader.SelectedIndex = Config.CustomFileUploaderSelected;
-            }
-
-            if (Config.CustomUploadersList.IsValidIndex(Config.CustomURLShortenerSelected))
-            {
-                cbCustomUploaderURLShortener.SelectedIndex = Config.CustomURLShortenerSelected;
-            }
-        }
-
-        private void LoadCustomUploader(CustomUploaderItem customUploader)
-        {
-            txtCustomUploaderName.Text = customUploader.Name ?? "";
-
-            cbCustomUploaderRequestType.SelectedIndex = (int)customUploader.RequestType;
-            txtCustomUploaderRequestURL.Text = customUploader.RequestURL ?? "";
-            txtCustomUploaderFileForm.Text = customUploader.FileFormName ?? "";
-            txtCustomUploaderFileForm.Enabled = customUploader.RequestType == CustomUploaderRequestType.POST;
-
-            txtCustomUploaderArgName.Text = "";
-            txtCustomUploaderArgValue.Text = "";
-            lvCustomUploaderArguments.Items.Clear();
-            if (customUploader.Arguments != null)
-            {
-                foreach (KeyValuePair<string, string> arg in customUploader.Arguments)
-                {
-                    lvCustomUploaderArguments.Items.Add(arg.Key).SubItems.Add(arg.Value);
-                }
-            }
-
-            txtCustomUploaderHeaderName.Text = "";
-            txtCustomUploaderHeaderValue.Text = "";
-            lvCustomUploaderHeaders.Items.Clear();
-            if (customUploader.Headers != null)
-            {
-                foreach (KeyValuePair<string, string> arg in customUploader.Headers)
-                {
-                    lvCustomUploaderHeaders.Items.Add(arg.Key).SubItems.Add(arg.Value);
-                }
-            }
-
-            cbCustomUploaderResponseType.SelectedIndex = (int)customUploader.ResponseType;
-            txtCustomUploaderRegexp.Text = "";
-            lvCustomUploaderRegexps.Items.Clear();
-            if (customUploader.RegexList != null)
-            {
-                foreach (string regexp in customUploader.RegexList)
-                {
-                    lvCustomUploaderRegexps.Items.Add(regexp);
-                }
-            }
-            txtCustomUploaderJsonPath.Text = "";
-            txtCustomUploaderXPath.Text = "";
-
-            txtCustomUploaderURL.Text = customUploader.URL ?? "";
-            txtCustomUploaderThumbnailURL.Text = customUploader.ThumbnailURL ?? "";
-            txtCustomUploaderDeletionURL.Text = customUploader.DeletionURL ?? "";
-        }
-
-        private CustomUploaderItem GetCustomUploaderFromFields()
-        {
-            CustomUploaderItem item = new CustomUploaderItem(txtCustomUploaderName.Text);
-
-            item.RequestType = (CustomUploaderRequestType)cbCustomUploaderRequestType.SelectedIndex;
-
-            item.RequestURL = txtCustomUploaderRequestURL.Text;
-
-            if (!string.IsNullOrEmpty(txtCustomUploaderFileForm.Text))
-            {
-                item.FileFormName = txtCustomUploaderFileForm.Text;
-            }
-
-            if (lvCustomUploaderArguments.Items.Count > 0)
-            {
-                item.Arguments = new Dictionary<string, string>();
-
-                foreach (ListViewItem lvItem in lvCustomUploaderArguments.Items)
-                {
-                    item.Arguments.Add(lvItem.Text, lvItem.SubItems[1].Text);
-                }
-            }
-
-            if (lvCustomUploaderHeaders.Items.Count > 0)
-            {
-                item.Headers = new Dictionary<string, string>();
-
-                foreach (ListViewItem lvItem in lvCustomUploaderHeaders.Items)
-                {
-                    item.Headers.Add(lvItem.Text, lvItem.SubItems[1].Text);
-                }
-            }
-
-            item.ResponseType = (ResponseType)cbCustomUploaderResponseType.SelectedIndex;
-
-            if (lvCustomUploaderRegexps.Items.Count > 0)
-            {
-                item.RegexList = new List<string>();
-
-                foreach (ListViewItem lvItem in lvCustomUploaderRegexps.Items)
-                {
-                    item.RegexList.Add(lvItem.Text);
-                }
-            }
-
-            if (!string.IsNullOrEmpty(txtCustomUploaderURL.Text))
-            {
-                item.URL = txtCustomUploaderURL.Text;
-            }
-
-            if (!string.IsNullOrEmpty(txtCustomUploaderThumbnailURL.Text))
-            {
-                item.ThumbnailURL = txtCustomUploaderThumbnailURL.Text;
-            }
-
-            if (!string.IsNullOrEmpty(txtCustomUploaderDeletionURL.Text))
-            {
-                item.DeletionURL = txtCustomUploaderDeletionURL.Text;
-            }
-
-            return item;
-        }
-
-        private void TestCustomUploader(CustomUploaderType type, CustomUploaderItem item)
-        {
-            btnCustomUploaderImageUploaderTest.Enabled = btnCustomUploaderTextUploaderTest.Enabled =
-                btnCustomUploaderFileUploaderTest.Enabled = btnCustomUploaderURLShortenerTest.Enabled = false;
-
-            UploadResult result = null;
-
-            txtCustomUploaderLog.ResetText();
-
-            TaskEx.Run(() =>
-            {
-                try
-                {
-                    switch (type)
-                    {
-                        case CustomUploaderType.Image:
-                            using (Stream stream = ShareXResources.Logo.GetStream())
-                            {
-                                CustomImageUploader imageUploader = new CustomImageUploader(item);
-                                result = imageUploader.Upload(stream, "Test.png");
-                                result.Errors = imageUploader.Errors;
-                            }
-                            break;
-                        case CustomUploaderType.Text:
-                            CustomTextUploader textUploader = new CustomTextUploader(item);
-                            result = textUploader.UploadText("ShareX text upload test", "Test.txt");
-                            result.Errors = textUploader.Errors;
-                            break;
-                        case CustomUploaderType.File:
-                            using (Stream stream = ShareXResources.Logo.GetStream())
-                            {
-                                CustomFileUploader fileUploader = new CustomFileUploader(item);
-                                result = fileUploader.Upload(stream, "Test.png");
-                                result.Errors = fileUploader.Errors;
-                            }
-                            break;
-                        case CustomUploaderType.URL:
-                            CustomURLShortener urlShortener = new CustomURLShortener(item);
-                            result = urlShortener.ShortenURL(Links.URL_WEBSITE);
-                            result.Errors = urlShortener.Errors;
-                            break;
-                    }
-                }
-                catch (Exception e)
-                {
-                    result = new UploadResult();
-                    result.Errors.Add(e.Message);
-                }
-            },
-            () =>
-            {
-                if (!IsDisposed)
-                {
-                    if (result != null)
-                    {
-                        if ((type != CustomUploaderType.URL && !string.IsNullOrEmpty(result.URL)) || (type == CustomUploaderType.URL && !string.IsNullOrEmpty(result.ShortenedURL)))
-                        {
-                            txtCustomUploaderLog.AppendText("URL: " + result + Environment.NewLine);
-
-                            if (!string.IsNullOrEmpty(result.ThumbnailURL))
-                            {
-                                txtCustomUploaderLog.AppendText("Thumbnail URL: " + result.ThumbnailURL + Environment.NewLine);
-                            }
-
-                            if (!string.IsNullOrEmpty(result.DeletionURL))
-                            {
-                                txtCustomUploaderLog.AppendText("Deletion URL: " + result.DeletionURL + Environment.NewLine);
-                            }
-                        }
-                        else if (result.IsError)
-                        {
-                            txtCustomUploaderLog.AppendText(Resources.UploadersConfigForm_Error + ": " + result.ErrorsToString() + Environment.NewLine);
-                        }
-                        else
-                        {
-                            txtCustomUploaderLog.AppendText(Resources.UploadersConfigForm_TestCustomUploader_Error__Result_is_empty_ + Environment.NewLine);
-                        }
-
-                        txtCustomUploaderLog.ScrollToCaret();
-
-                        btnCustomUploaderShowLastResponse.Tag = result.Response;
-                        btnCustomUploaderShowLastResponse.Enabled = !string.IsNullOrEmpty(result.Response);
-                    }
-
-                    btnCustomUploaderImageUploaderTest.Enabled = btnCustomUploaderTextUploaderTest.Enabled =
-                        btnCustomUploaderFileUploaderTest.Enabled = btnCustomUploaderURLShortenerTest.Enabled = true;
-                }
-            });
-        }
-
-        #endregion Custom uploader
-
         #region Jira
 
         public void JiraAuthOpen()
@@ -1843,7 +956,7 @@ namespace ShareX.UploadersLib
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ex.ShowError();
             }
         }
 
@@ -1870,60 +983,162 @@ namespace ShareX.UploadersLib
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ex.ShowError();
             }
         }
 
         #endregion Jira
 
-        #region Gist
+        #region Shared folder
 
-        public void GistAuthOpen()
+        private void SharedFolderUpdateControls()
+        {
+            int selected = lbSharedFolderAccounts.SelectedIndex;
+
+            lbSharedFolderAccounts.Items.Clear();
+            cboSharedFolderImages.Items.Clear();
+            cboSharedFolderText.Items.Clear();
+            cboSharedFolderFiles.Items.Clear();
+
+            if (Config.LocalhostAccountList.Count > 0)
+            {
+                foreach (LocalhostAccount account in Config.LocalhostAccountList)
+                {
+                    lbSharedFolderAccounts.Items.Add(account);
+                    cboSharedFolderImages.Items.Add(account);
+                    cboSharedFolderText.Items.Add(account);
+                    cboSharedFolderFiles.Items.Add(account);
+                }
+
+                lbSharedFolderAccounts.SelectedIndex = selected.Clamp(0, Config.LocalhostAccountList.Count - 1);
+                cboSharedFolderImages.SelectedIndex = Config.LocalhostSelectedImages.Clamp(0, Config.LocalhostAccountList.Count - 1);
+                cboSharedFolderText.SelectedIndex = Config.LocalhostSelectedText.Clamp(0, Config.LocalhostAccountList.Count - 1);
+                cboSharedFolderFiles.SelectedIndex = Config.LocalhostSelectedFiles.Clamp(0, Config.LocalhostAccountList.Count - 1);
+            }
+
+            SharedFolderUpdateEnabledStates();
+        }
+
+        private void SharedFolderUpdateEnabledStates()
+        {
+            cboSharedFolderImages.Enabled = cboSharedFolderText.Enabled = cboSharedFolderFiles.Enabled = Config.LocalhostAccountList.Count > 0;
+            btnSharedFolderRemove.Enabled = btnSharedFolderDuplicate.Enabled = lbSharedFolderAccounts.SelectedIndex > -1;
+        }
+
+        private void SharedFolderAddItem(LocalhostAccount account)
+        {
+            Config.LocalhostAccountList.Add(account);
+            lbSharedFolderAccounts.Items.Add(account);
+            lbSharedFolderAccounts.SelectedIndex = lbSharedFolderAccounts.Items.Count - 1;
+            SharedFolderUpdateControls();
+        }
+
+        private bool SharedFolderRemoveItem(int index)
+        {
+            if (index.IsBetween(0, lbSharedFolderAccounts.Items.Count - 1))
+            {
+                Config.LocalhostAccountList.RemoveAt(index);
+                lbSharedFolderAccounts.Items.RemoveAt(index);
+
+                if (lbSharedFolderAccounts.Items.Count > 0)
+                {
+                    lbSharedFolderAccounts.SelectedIndex = index == lbSharedFolderAccounts.Items.Count ? lbSharedFolderAccounts.Items.Count - 1 : index;
+                    pgSharedFolderAccount.SelectedObject = lbSharedFolderAccounts.Items[lbSharedFolderAccounts.SelectedIndex];
+                }
+                else
+                {
+                    pgSharedFolderAccount.SelectedObject = null;
+                }
+
+                SharedFolderUpdateControls();
+
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion Shared folder
+
+        #region Generic OAuth2
+
+        private OAuth2Info OAuth2Open(IOAuth2Basic uploader)
         {
             try
             {
-                OAuth2Info oauth = new OAuth2Info(APIKeys.GitHubID, APIKeys.GitHubSecret);
-                string url = new GitHubGist(oauth).GetAuthorizationURL();
+                string url = uploader.GetAuthorizationURL();
 
                 if (!string.IsNullOrEmpty(url))
                 {
-                    Config.GistOAuth2Info = oauth;
                     URLHelpers.OpenURL(url);
+                    DebugHelper.WriteLine(uploader.ToString() + " - Authorization URL is opened: " + url);
+                    return uploader.AuthInfo;
+                }
+                else
+                {
+                    DebugHelper.WriteLine(uploader.ToString() + " - Authorization URL is empty.");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ex.ShowError();
             }
+
+            return null;
         }
 
-        public void GistAuthComplete(string code)
+        private bool OAuth2Complete(IOAuth2Basic uploader, string code, OAuthControl control)
         {
             try
             {
-                if (!string.IsNullOrEmpty(code) && Config.GistOAuth2Info != null)
+                if (!string.IsNullOrEmpty(code) && uploader.AuthInfo != null)
                 {
-                    bool result = new GitHubGist(Config.GistOAuth2Info).GetAccessToken(code);
-
-                    if (result)
-                    {
-                        oAuth2Gist.Status = OAuthLoginStatus.LoginSuccessful;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        oAuth2Gist.Status = OAuthLoginStatus.LoginFailed;
-                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        atcGistAccountType.SelectedAccountType = AccountType.Anonymous;
-                    }
+                    bool result = uploader.GetAccessToken(code);
+                    ConfigureOAuthStatus(control, result);
+                    return result;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ex.ShowError();
+            }
+
+            return false;
+        }
+
+        private bool OAuth2Refresh(IOAuth2 uploader, OAuthControl oauth2)
+        {
+            try
+            {
+                if (OAuth2Info.CheckOAuth(uploader.AuthInfo))
+                {
+                    bool result = uploader.RefreshAccessToken();
+                    ConfigureOAuthStatus(oauth2, result);
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                ex.ShowError();
+            }
+
+            return false;
+        }
+
+        private void ConfigureOAuthStatus(OAuthControl oauth2, bool result)
+        {
+            if (result)
+            {
+                oauth2.Status = OAuthLoginStatus.LoginSuccessful;
+                MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                oauth2.Status = OAuthLoginStatus.LoginFailed;
+                MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        #endregion Gist
+        #endregion Generic OAuth2
     }
 }

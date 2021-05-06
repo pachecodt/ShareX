@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -34,6 +34,8 @@ namespace ShareX.HelpersLib
     public class MyListView : ListView
     {
         public delegate void ListViewItemMovedEventHandler(object sender, int oldIndex, int newIndex);
+
+        public event ListViewItemMovedEventHandler ItemMoving;
         public event ListViewItemMovedEventHandler ItemMoved;
 
         [DefaultValue(false)]
@@ -52,8 +54,7 @@ namespace ShareX.HelpersLib
         [DefaultValue(false)]
         public bool DisableDeselect { get; set; }
 
-        [Browsable(false)]
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int SelectedIndex
         {
             get
@@ -67,14 +68,13 @@ namespace ShareX.HelpersLib
             }
             set
             {
-                foreach (ListViewItem lvi in SelectedItems)
-                {
-                    lvi.Selected = false;
-                }
+                UnselectAll();
 
                 if (value > -1)
                 {
-                    Items[value].Selected = true;
+                    ListViewItem lvi = Items[value];
+                    lvi.EnsureVisible();
+                    lvi.Selected = true;
                 }
             }
         }
@@ -141,6 +141,32 @@ namespace ShareX.HelpersLib
             if (Items.Count > 0)
             {
                 SelectedIndex = Items.Count - 1;
+            }
+        }
+
+        public void SelectSingle(ListViewItem lvi)
+        {
+            UnselectAll();
+
+            if (lvi != null)
+            {
+                lvi.Selected = true;
+            }
+        }
+
+        public void UnselectAll()
+        {
+            if (MultiSelect)
+            {
+                SelectedItems.Clear();
+            }
+        }
+
+        public void EnsureSelectedVisible()
+        {
+            if (SelectedItems.Count > 0)
+            {
+                SelectedItems[0].EnsureVisible();
             }
         }
 
@@ -260,6 +286,8 @@ namespace ShareX.HelpersLib
                     newIndex = Items.Count - 1;
                 }
 
+                OnItemMoving(oldIndex, newIndex);
+
                 Items.RemoveAt(oldIndex);
                 Items.Insert(newIndex, lvi);
 
@@ -270,12 +298,14 @@ namespace ShareX.HelpersLib
             Invalidate();
         }
 
+        protected void OnItemMoving(int oldIndex, int newIndex)
+        {
+            ItemMoving?.Invoke(this, oldIndex, newIndex);
+        }
+
         protected void OnItemMoved(int oldIndex, int newIndex)
         {
-            if (ItemMoved != null)
-            {
-                ItemMoved(this, oldIndex, newIndex);
-            }
+            ItemMoved?.Invoke(this, oldIndex, newIndex);
         }
 
         protected override void OnDragLeave(EventArgs e)
@@ -309,7 +339,12 @@ namespace ShareX.HelpersLib
                     lvwColumnSorter.Order = SortOrder.Ascending;
                 }
 
+                // If the column is tagged as a DateTime, then sort by date
+                lvwColumnSorter.SortByDate = Columns[e.Column].Tag is DateTime;
+
+                Cursor.Current = Cursors.WaitCursor;
                 Sort();
+                Cursor.Current = Cursors.Default;
             }
         }
 
@@ -324,6 +359,16 @@ namespace ShareX.HelpersLib
 
                 Point[] rightTriangle = new Point[] { new Point(right, y - 4), new Point(right - 8, y), new Point(right, y + 4) };
                 g.FillPolygon(SystemBrushes.HotTrack, rightTriangle);
+            }
+        }
+
+        protected override void ScaleControl(SizeF factor, BoundsSpecified specified)
+        {
+            base.ScaleControl(factor, specified);
+
+            foreach (ColumnHeader column in Columns)
+            {
+                column.Width = (int)Math.Round(column.Width * factor.Width);
             }
         }
     }

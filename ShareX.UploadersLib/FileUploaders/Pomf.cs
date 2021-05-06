@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -26,13 +26,9 @@
 using Newtonsoft.Json;
 using ShareX.HelpersLib;
 using ShareX.UploadersLib.Properties;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 
 namespace ShareX.UploadersLib.FileUploaders
@@ -58,29 +54,6 @@ namespace ShareX.UploadersLib.FileUploaders
 
     public class Pomf : FileUploader
     {
-        // Pomf clones: https://docs.google.com/spreadsheets/d/1kh1TZdtyX7UlRd55OBxf7DB-JGj2rsfWckI0FPQRYhE
-        public static List<PomfUploader> Uploaders = new List<PomfUploader>()
-        {
-            //new PomfUploader("https://pomf.se/upload.php"),
-            new PomfUploader("http://comfy.moe/upload.php"),
-            new PomfUploader("https://cocaine.ninja/upload.php"),
-            new PomfUploader("https://cuntflaps.me/upload.php"),
-            new PomfUploader("https://fluntcaps.me/upload.php"),
-            new PomfUploader("http://g.zxq.co/upload.php", "http://y.zxq.co"),
-            new PomfUploader("http://glop.me/upload.php", "http://gateway.glop.me/ipfs"),
-            new PomfUploader("http://kyaa.sg/upload.php", "https://r.kyaa.sg"),
-            new PomfUploader("https://mixtape.moe/upload.php"),
-            new PomfUploader("https://pomf.cat/upload.php", "https://a.pomf.cat"),
-            new PomfUploader("https://pomf.is/upload.php"),
-            new PomfUploader("http://reich.io/upload.php"),
-            new PomfUploader("https://steamy.moe/upload.php"),
-            new PomfUploader("https://sugoi.vidyagam.es/upload.php"),
-            new PomfUploader("http://up.che.moe/upload.php", "http://cdn.che.moe"),
-            new PomfUploader("https://filebunker.pw/upload.php"),
-            new PomfUploader("https://p.fuwafuwa.moe/upload.php"),
-            new PomfUploader("https://pomf.gocataclysm.com/upload.php")
-        };
-
         public PomfUploader Uploader { get; private set; }
 
         public Pomf(PomfUploader uploader)
@@ -90,7 +63,7 @@ namespace ShareX.UploadersLib.FileUploaders
 
         public override UploadResult Upload(Stream stream, string fileName)
         {
-            UploadResult result = UploadData(stream, Uploader.UploadURL, fileName, "files[]");
+            UploadResult result = SendRequestFile(Uploader.UploadURL, stream, fileName, "files[]");
 
             if (result.IsSuccess)
             {
@@ -102,7 +75,8 @@ namespace ShareX.UploadersLib.FileUploaders
 
                     if (!URLHelpers.HasPrefix(url) && !string.IsNullOrEmpty(Uploader.ResultURL))
                     {
-                        url = URLHelpers.CombineURL(Uploader.ResultURL, url);
+                        string resultURL = URLHelpers.FixPrefix(Uploader.ResultURL);
+                        url = URLHelpers.CombineURL(resultURL, url);
                     }
 
                     result.URL = url;
@@ -110,50 +84,6 @@ namespace ShareX.UploadersLib.FileUploaders
             }
 
             return result;
-        }
-
-        public static string TestUploaders()
-        {
-            List<PomfTest> successful = new List<PomfTest>();
-            List<PomfTest> failed = new List<PomfTest>();
-
-            using (MemoryStream ms = new MemoryStream())
-            {
-                using (Image logo = ShareXResources.Logo)
-                {
-                    logo.Save(ms, ImageFormat.Png);
-                }
-
-                foreach (PomfUploader uploader in Uploaders)
-                {
-                    try
-                    {
-                        Pomf pomf = new Pomf(uploader);
-                        string filename = Helpers.GetRandomAlphanumeric(10) + ".png";
-
-                        Stopwatch timer = Stopwatch.StartNew();
-                        UploadResult result = pomf.Upload(ms, filename);
-                        long uploadTime = timer.ElapsedMilliseconds;
-
-                        if (result != null && result.IsSuccess && !string.IsNullOrEmpty(result.URL))
-                        {
-                            successful.Add(new PomfTest { Name = uploader.ToString(), UploadTime = uploadTime });
-                        }
-                        else
-                        {
-                            failed.Add(new PomfTest { Name = uploader.ToString() });
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        DebugHelper.WriteException(e);
-                        failed.Add(new PomfTest { Name = uploader.ToString() });
-                    }
-                }
-            }
-
-            return string.Format("Successful uploads ({0}):\r\n\r\n{1}\r\n\r\nFailed uploads ({2}):\r\n\r\n{3}",
-                successful.Count, string.Join("\r\n", successful.OrderBy(x => x.UploadTime)), failed.Count, string.Join("\r\n", failed));
         }
 
         private class PomfResponse
@@ -169,22 +99,6 @@ namespace ShareX.UploadersLib.FileUploaders
             public string name { get; set; }
             public string url { get; set; }
             public string size { get; set; }
-        }
-
-        private class PomfTest
-        {
-            public string Name { get; set; }
-            public long UploadTime { get; set; } = -1;
-
-            public override string ToString()
-            {
-                if (UploadTime >= 0)
-                {
-                    return $"{Name} ({UploadTime}ms)";
-                }
-
-                return Name;
-            }
         }
     }
 }

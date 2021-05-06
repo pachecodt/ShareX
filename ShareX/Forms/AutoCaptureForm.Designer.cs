@@ -77,6 +77,7 @@
             // 
             // tsslStatus
             // 
+            this.tsslStatus.BackColor = System.Drawing.Color.Transparent;
             this.tsslStatus.Name = "tsslStatus";
             resources.ApplyResources(this.tsslStatus, "tsslStatus");
             // 
@@ -116,14 +117,9 @@
             // nudRepeatTime
             // 
             this.nudRepeatTime.DecimalPlaces = 1;
-            this.nudRepeatTime.Increment = new decimal(new int[] {
-            5,
-            0,
-            0,
-            65536});
             resources.ApplyResources(this.nudRepeatTime, "nudRepeatTime");
             this.nudRepeatTime.Maximum = new decimal(new int[] {
-            3600,
+            86400,
             0,
             0,
             0});
@@ -184,7 +180,8 @@
             // AutoCaptureForm
             // 
             resources.ApplyResources(this, "$this");
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.SystemColors.Window;
             this.Controls.Add(this.gbRegion);
             this.Controls.Add(this.lblDurationSeconds);

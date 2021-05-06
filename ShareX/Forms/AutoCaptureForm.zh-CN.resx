@@ -1,4 +1,4 @@
-﻿
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="$this.Text" xml:space="preserve">
-    <value>ShareX - 自动捕获</value>
+    <value>ShareX - 自动捕捉</value>
   </data>
   <data name="btnExecute.Text" xml:space="preserve">
     <value>开始</value>
@@ -127,16 +127,16 @@
     <value>选择区域</value>
   </data>
   <data name="cbAutoMinimize.Text" xml:space="preserve">
-    <value>自动最小化到托盘</value>
+    <value>自动最小化到系统托盘</value>
   </data>
   <data name="cbWaitUploads.Text" xml:space="preserve">
-    <value>等到任务完成</value>
+    <value>等待任务完成</value>
   </data>
   <data name="gbRegion.Text" xml:space="preserve">
     <value>区域</value>
   </data>
   <data name="lblDuration.Text" xml:space="preserve">
-    <value>重复时间:</value>
+    <value>重复时间：</value>
   </data>
   <data name="lblDurationSeconds.Text" xml:space="preserve">
     <value>秒</value>
@@ -145,7 +145,7 @@
     <value>区域</value>
   </data>
   <data name="niTray.Text" xml:space="preserve">
-    <value>ShareX - 自动捕获</value>
+    <value>ShareX - 自动捕捉</value>
   </data>
   <data name="rbCustomRegion.Text" xml:space="preserve">
     <value>自定义区域</value>

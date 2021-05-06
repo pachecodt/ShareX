@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -50,7 +50,7 @@ namespace ShareX.ScreenCaptureLib
         public List<WindowInfo> GetWindowsList()
         {
             windows = new List<WindowInfo>();
-            NativeMethods.EnumWindowsProc ewp = EvalWindows;
+            EnumWindowsProc ewp = EvalWindows;
             NativeMethods.EnumWindows(ewp, IntPtr.Zero);
             return windows;
         }
@@ -73,7 +73,7 @@ namespace ShareX.ScreenCaptureLib
 
             if (!string.IsNullOrEmpty(className))
             {
-                return ignoreList.All(ignore => !className.Equals(ignore, StringComparison.InvariantCultureIgnoreCase));
+                return ignoreList.All(ignore => !className.Equals(ignore, StringComparison.OrdinalIgnoreCase));
             }
 
             return true;

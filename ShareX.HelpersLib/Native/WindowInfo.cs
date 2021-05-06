@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -23,16 +23,17 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.HelpersLib;
 using System;
 using System.Diagnostics;
 using System.Drawing;
 
-namespace ShareX.ScreenCaptureLib
+namespace ShareX.HelpersLib
 {
     public class WindowInfo
     {
         public IntPtr Handle { get; }
+
+        public bool IsHandleCreated => Handle != IntPtr.Zero;
 
         public string Text => NativeMethods.GetWindowText(Handle);
 
@@ -40,13 +41,46 @@ namespace ShareX.ScreenCaptureLib
 
         public Process Process => NativeMethods.GetProcessByWindowHandle(Handle);
 
-        public string ProcessName => Process?.ProcessName;
+        public string ProcessName
+        {
+            get
+            {
+                using (Process process = Process)
+                {
+                    return process?.ProcessName;
+                }
+            }
+        }
+
+        public string ProcessFilePath
+        {
+            get
+            {
+                using (Process process = Process)
+                {
+                    return process?.MainModule?.FileName;
+                }
+            }
+        }
+
+        public string ProcessFileName => Helpers.GetFilenameSafe(ProcessFilePath);
+
+        public int ProcessId
+        {
+            get
+            {
+                using (Process process = Process)
+                {
+                    return process.Id;
+                }
+            }
+        }
 
         public Rectangle Rectangle => CaptureHelpers.GetWindowRectangle(Handle);
 
         public Rectangle ClientRectangle => NativeMethods.GetClientRect(Handle);
 
-        public WindowStyles Styles => (WindowStyles)NativeMethods.GetWindowLong(Handle, NativeMethods.GWL_STYLE);
+        public WindowStyles Styles => (WindowStyles)NativeMethods.GetWindowLong(Handle, NativeConstants.GWL_STYLE);
 
         public Icon Icon => NativeMethods.GetApplicationIcon(Handle);
 
@@ -54,7 +88,9 @@ namespace ShareX.ScreenCaptureLib
 
         public bool IsMinimized => NativeMethods.IsIconic(Handle);
 
-        public bool IsVisible => NativeMethods.IsWindowVisible(Handle);
+        public bool IsVisible => NativeMethods.IsWindowVisible(Handle) && !IsCloaked;
+
+        public bool IsCloaked => NativeMethods.IsWindowCloaked(Handle);
 
         public bool IsActive => NativeMethods.GetForegroundWindow() == Handle;
 
@@ -65,7 +101,18 @@ namespace ShareX.ScreenCaptureLib
 
         public void Activate()
         {
-            NativeMethods.ActivateWindow(Handle);
+            if (IsHandleCreated)
+            {
+                NativeMethods.SetForegroundWindow(Handle);
+            }
+        }
+
+        public void Restore()
+        {
+            if (IsHandleCreated)
+            {
+                NativeMethods.ShowWindow(Handle, (int)WindowShowStyle.Restore);
+            }
         }
 
         public override string ToString()

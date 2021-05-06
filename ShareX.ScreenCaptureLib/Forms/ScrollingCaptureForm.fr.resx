@@ -160,7 +160,7 @@
     <value>Nombre d'images :</value>
   </data>
   <data name="gbTrimEdges.Text" xml:space="preserve">
-    <value>Ajuster les contours :</value>
+    <value>Ajuster les contours</value>
   </data>
   <data name="lblCombineVertical.Text" xml:space="preserve">
     <value>Vertical :</value>
@@ -224,9 +224,6 @@
   </data>
   <data name="gbAfterCapture.Text" xml:space="preserve">
     <value>Après la capture</value>
-  </data>
-  <data name="cbAutoClose.Text" xml:space="preserve">
-    <value>Fermer cette fenêtre après le traitement</value>
   </data>
   <data name="lblScrollTopMethodBeforeCapture.Text" xml:space="preserve">
     <value>Méthode de défilement vers le haut avant la capture :</value>

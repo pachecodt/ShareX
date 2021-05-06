@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="lblSteamBuild.Text" xml:space="preserve">
-    <value>Сборка для Steam</value>
-  </data>
   <data name="$this.Text" xml:space="preserve">
     <value>ShareX - О программе</value>
   </data>
@@ -127,9 +124,12 @@
     <value>Закрыть</value>
   </data>
   <data name="btnShareXLicense.Text" xml:space="preserve">
-    <value>Лицензия ShareX</value>
+    <value>Лицензия ShareX...</value>
   </data>
   <data name="btnLicenses.Text" xml:space="preserve">
-    <value>Лицензии</value>
+    <value>Лицензии...</value>
+  </data>
+  <data name="lblBuild.Text" xml:space="preserve">
+    <value>Сборка</value>
   </data>
 </root>

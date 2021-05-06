@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -23,10 +23,31 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.HelpersLib;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+
 namespace ShareX.ScreenCaptureLib
 {
     public class RectangleRegionShape : BaseRegionShape
     {
         public override ShapeType ShapeType { get; } = ShapeType.RegionRectangle;
+
+        public int CornerRadius { get; set; }
+
+        public override void OnConfigLoad()
+        {
+            CornerRadius = AnnotationOptions.RegionCornerRadius;
+        }
+
+        public override void OnConfigSave()
+        {
+            AnnotationOptions.RegionCornerRadius = CornerRadius;
+        }
+
+        public override void OnShapePathRequested(GraphicsPath gp, Rectangle rect)
+        {
+            gp.AddRoundedRectangle(rect, CornerRadius);
+        }
     }
 }

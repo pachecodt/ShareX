@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -33,13 +33,31 @@ namespace ShareX.ScreenCaptureLib
 {
     public abstract class BaseShape : IDisposable
     {
-        protected const int MinimumSize = 3;
-
         public abstract ShapeCategory ShapeCategory { get; }
 
         public abstract ShapeType ShapeType { get; }
 
-        public Rectangle Rectangle { get; set; }
+        private Rectangle rectangle;
+
+        public Rectangle Rectangle
+        {
+            get
+            {
+                return rectangle;
+            }
+            set
+            {
+                rectangle = value;
+                startPosition = rectangle.Location;
+                endPosition = new Point(rectangle.X + rectangle.Width - 1, rectangle.Y + rectangle.Height - 1);
+            }
+        }
+
+        public Rectangle RectangleInsideCanvas => Rectangle.Intersect(Rectangle, Manager.Form.CanvasRectangle);
+
+        public bool IsInsideCanvas => !RectangleInsideCanvas.IsEmpty;
+
+        public virtual bool LimitRectangleToInsideCanvas { get; }
 
         private Point startPosition;
 
@@ -49,11 +67,10 @@ namespace ShareX.ScreenCaptureLib
             {
                 return startPosition;
             }
-            set
+            private set
             {
                 startPosition = value;
-
-                Rectangle = CaptureHelpers.CreateRectangle(StartPosition, EndPosition);
+                rectangle = CaptureHelpers.CreateRectangle(startPosition, endPosition);
             }
         }
 
@@ -65,35 +82,82 @@ namespace ShareX.ScreenCaptureLib
             {
                 return endPosition;
             }
-            set
+            private set
             {
                 endPosition = value;
-
-                Rectangle = CaptureHelpers.CreateRectangle(StartPosition, EndPosition);
+                rectangle = CaptureHelpers.CreateRectangle(startPosition, endPosition);
             }
         }
 
-        public virtual bool IsValidShape => !Rectangle.IsEmpty && Rectangle.Width >= MinimumSize && Rectangle.Height >= MinimumSize;
+        public Size InitialSize { get; set; }
+
+        public virtual bool IsValidShape => !Rectangle.IsEmpty && Rectangle.Width >= Options.MinimumSize && Rectangle.Height >= Options.MinimumSize;
+
+        public virtual bool IsSelectable => Manager.CurrentTool == ShapeType || Manager.CurrentTool == ShapeType.ToolSelect;
+
+        public bool ForceProportionalResizing { get; protected set; }
 
         internal ShapeManager Manager { get; set; }
 
-        protected RegionCaptureOptions Options => Manager.Config;
-
-        protected AnnotationOptions AnnotationOptions => Manager.Config.AnnotationOptions;
+        protected InputManager InputManager => Manager.InputManager;
+        protected RegionCaptureOptions Options => Manager.Options;
+        protected AnnotationOptions AnnotationOptions => Manager.Options.AnnotationOptions;
 
         private Point tempNodePos, tempStartPos, tempEndPos;
+        private Rectangle tempRectangle;
+
+        public bool IsHandledBySelectTool
+        {
+            get
+            {
+                switch (ShapeCategory)
+                {
+                    case ShapeCategory.Drawing:
+                    case ShapeCategory.Effect:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        }
 
         public virtual bool Intersects(Point position)
         {
             return Rectangle.Contains(position);
         }
 
+        internal void ChangeNodeShape(NodeShape nodeShape)
+        {
+            foreach (ResizeNode node in Manager.ResizeNodes)
+            {
+                node.Shape = nodeShape;
+            }
+        }
+
+        protected virtual void UseLightResizeNodes()
+        {
+            ChangeNodeShape(NodeShape.Square);
+        }
+
+        protected void UpdateNodeShape()
+        {
+            if (Options.UseLightResizeNodes)
+            {
+                UseLightResizeNodes();
+            }
+            else
+            {
+                ChangeNodeShape(NodeShape.CustomNode);
+            }
+        }
+
         public virtual void ShowNodes()
         {
+            UpdateNodeShape();
             Manager.NodesVisible = true;
         }
 
-        public void Remove()
+        public virtual void Remove()
         {
             Manager.DeleteShape(this);
         }
@@ -112,12 +176,29 @@ namespace ShareX.ScreenCaptureLib
 
         public virtual void Move(int x, int y)
         {
-            Rectangle = Rectangle.LocationOffset(x, y);
+            StartPosition = StartPosition.Add(x, y);
+            EndPosition = EndPosition.Add(x, y);
         }
 
-        public void Move(Point point)
+        public void Move(Point offset)
         {
-            Move(point.X, point.Y);
+            Move(offset.X, offset.Y);
+        }
+
+        public void MoveAbsolute(int x, int y, bool center = false)
+        {
+            if (center)
+            {
+                x -= Rectangle.Size.Width / 2;
+                y -= Rectangle.Size.Height / 2;
+            }
+
+            Move(x - Rectangle.X, y - Rectangle.Y);
+        }
+
+        public void MoveAbsolute(Point point, bool center = false)
+        {
+            MoveAbsolute(point.X, point.Y, center);
         }
 
         public virtual void Resize(int x, int y, bool fromBottomRight)
@@ -132,23 +213,51 @@ namespace ShareX.ScreenCaptureLib
             }
         }
 
+        public virtual BaseShape Duplicate()
+        {
+            ShapeManager manager = Manager;
+            Manager = null;
+            BaseShape shape = this.Copy();
+            Manager = manager;
+            shape.Manager = manager;
+            return shape;
+        }
+
         public virtual void OnCreating()
         {
-            Point pos = InputManager.MousePosition0Based;
+            Point pos = InputManager.ClientMousePosition;
 
             if (Options.IsFixedSize && ShapeCategory == ShapeCategory.Region)
             {
                 Manager.IsMoving = true;
-                Rectangle = new Rectangle(new Point(pos.X - Options.FixedSize.Width / 2, pos.Y - Options.FixedSize.Height / 2), Options.FixedSize);
+                Rectangle = new Rectangle(new Point(pos.X - (Options.FixedSize.Width / 2), pos.Y - (Options.FixedSize.Height / 2)), Options.FixedSize);
+                OnCreated();
             }
             else
             {
                 Manager.IsCreating = true;
-                StartPosition = EndPosition = pos;
+                Rectangle = new Rectangle(pos.X, pos.Y, 1, 1);
             }
         }
 
         public virtual void OnCreated()
+        {
+            InitialSize = Rectangle.Size;
+        }
+
+        public virtual void OnMoving()
+        {
+        }
+
+        public virtual void OnMoved()
+        {
+        }
+
+        public virtual void OnResizing()
+        {
+        }
+
+        public virtual void OnResized()
         {
         }
 
@@ -156,13 +265,14 @@ namespace ShareX.ScreenCaptureLib
         {
             if (Manager.IsCreating)
             {
-                Point pos = InputManager.MousePosition0Based;
+                Point pos = InputManager.ClientMousePosition;
 
-                if (Manager.IsCornerMoving)
+                if (Manager.IsCornerMoving && !Manager.IsPanning)
                 {
                     StartPosition = StartPosition.Add(InputManager.MouseVelocity);
                 }
-                else if (Manager.IsProportionalResizing)
+
+                if (Manager.IsProportionalResizing || ForceProportionalResizing)
                 {
                     float degree, startDegree;
 
@@ -186,9 +296,15 @@ namespace ShareX.ScreenCaptureLib
 
                 EndPosition = pos;
             }
-            else if (Manager.IsMoving)
+            else if (Manager.IsMoving && !Manager.IsPanning)
             {
                 Move(InputManager.MouseVelocity);
+            }
+
+            if (LimitRectangleToInsideCanvas)
+            {
+                StartPosition = StartPosition.Restrict(Manager.Form.CanvasRectangle);
+                EndPosition = EndPosition.Restrict(Manager.Form.CanvasRectangle);
             }
         }
 
@@ -214,7 +330,6 @@ namespace ShareX.ScreenCaptureLib
             for (int i = 0; i < 8; i++)
             {
                 ResizeNode node = Manager.ResizeNodes[i];
-                node.Shape = NodeShape.Square;
                 node.Visible = true;
             }
         }
@@ -234,9 +349,20 @@ namespace ShareX.ScreenCaptureLib
                         tempNodePos = node.Position;
                         tempStartPos = Rectangle.Location;
                         tempEndPos = new Point(Rectangle.X + Rectangle.Width - 1, Rectangle.Y + Rectangle.Height - 1);
+                        tempRectangle = Rectangle;
+
+                        OnResizing();
                     }
 
-                    Point pos = InputManager.MousePosition0Based;
+                    if (Manager.IsCornerMoving || Manager.IsPanning)
+                    {
+                        tempStartPos.Offset(InputManager.MouseVelocity);
+                        tempEndPos.Offset(InputManager.MouseVelocity);
+                        tempNodePos.Offset(InputManager.MouseVelocity);
+                        tempRectangle.LocationOffset(InputManager.MouseVelocity);
+                    }
+
+                    Point pos = InputManager.ClientMousePosition;
                     Point startPos = tempStartPos;
                     Point endPos = tempEndPos;
 
@@ -274,7 +400,77 @@ namespace ShareX.ScreenCaptureLib
                             break;
                     }
 
-                    Rectangle = CaptureHelpers.CreateRectangle(startPos, endPos);
+                    StartPosition = startPos;
+                    EndPosition = endPos;
+
+                    if (Manager.IsProportionalResizing && !InitialSize.IsEmpty)
+                    {
+                        switch (nodePosition)
+                        {
+                            case NodePosition.Top:
+                            case NodePosition.Right:
+                            case NodePosition.Bottom:
+                            case NodePosition.Left:
+                                return;
+                        }
+
+                        double ratio = Math.Min(Rectangle.Width / (double)InitialSize.Width, Rectangle.Height / (double)InitialSize.Height);
+                        int newWidth = (int)Math.Round(InitialSize.Width * ratio);
+                        int newHeight = (int)Math.Round(InitialSize.Height * ratio);
+
+                        Point anchor = new Point();
+
+                        switch (nodePosition)
+                        {
+                            case NodePosition.TopLeft:
+                            case NodePosition.Left:
+                            case NodePosition.BottomLeft:
+                                anchor.X = tempRectangle.Right - 1;
+                                break;
+                            case NodePosition.TopRight:
+                            case NodePosition.Right:
+                            case NodePosition.BottomRight:
+                                anchor.X = tempRectangle.X;
+                                break;
+                        }
+
+                        switch (nodePosition)
+                        {
+                            case NodePosition.TopLeft:
+                            case NodePosition.Top:
+                            case NodePosition.TopRight:
+                                anchor.Y = tempRectangle.Bottom - 1;
+                                break;
+                            case NodePosition.BottomLeft:
+                            case NodePosition.Bottom:
+                            case NodePosition.BottomRight:
+                                anchor.Y = tempRectangle.Y;
+                                break;
+                        }
+
+                        Rectangle newRect = Rectangle;
+
+                        if (pos.X < anchor.X)
+                        {
+                            newRect.X = newRect.Right - newWidth;
+                        }
+
+                        newRect.Width = newWidth;
+
+                        if (pos.Y < anchor.Y)
+                        {
+                            newRect.Y = newRect.Bottom - newHeight;
+                        }
+
+                        newRect.Height = newHeight;
+
+                        Rectangle = newRect;
+                    }
+
+                    if (LimitRectangleToInsideCanvas)
+                    {
+                        Rectangle = RectangleInsideCanvas;
+                    }
                 }
             }
         }
@@ -282,11 +478,11 @@ namespace ShareX.ScreenCaptureLib
         public virtual void OnNodePositionUpdate()
         {
             int xStart = Rectangle.X;
-            int xMid = Rectangle.X + Rectangle.Width / 2;
+            int xMid = Rectangle.X + (Rectangle.Width / 2);
             int xEnd = Rectangle.X + Rectangle.Width - 1;
 
             int yStart = Rectangle.Y;
-            int yMid = Rectangle.Y + Rectangle.Height / 2;
+            int yMid = Rectangle.Y + (Rectangle.Height / 2);
             int yEnd = Rectangle.Y + Rectangle.Height - 1;
 
             Manager.ResizeNodes[(int)NodePosition.TopLeft].Position = new Point(xStart, yStart);
@@ -297,6 +493,37 @@ namespace ShareX.ScreenCaptureLib
             Manager.ResizeNodes[(int)NodePosition.Bottom].Position = new Point(xMid, yEnd);
             Manager.ResizeNodes[(int)NodePosition.BottomLeft].Position = new Point(xStart, yEnd);
             Manager.ResizeNodes[(int)NodePosition.Left].Position = new Point(xStart, yMid);
+
+            for (int i = 0; i < 8; i++)
+            {
+                Manager.ResizeNodes[i].Visible = true;
+            }
+
+            if (Manager.ResizeNodes[(int)NodePosition.Right].Rectangle.IntersectsWith(Manager.ResizeNodes[(int)NodePosition.BottomRight].Rectangle))
+            {
+                Manager.ResizeNodes[(int)NodePosition.Left].Visible =
+                    Manager.ResizeNodes[(int)NodePosition.Right].Visible = false;
+            }
+
+            if (Manager.ResizeNodes[(int)NodePosition.Bottom].Rectangle.IntersectsWith(Manager.ResizeNodes[(int)NodePosition.BottomRight].Rectangle))
+            {
+                Manager.ResizeNodes[(int)NodePosition.Top].Visible =
+                    Manager.ResizeNodes[(int)NodePosition.Bottom].Visible = false;
+            }
+
+            if (Manager.ResizeNodes[(int)NodePosition.TopRight].Rectangle.IntersectsWith(Manager.ResizeNodes[(int)NodePosition.BottomRight].Rectangle))
+            {
+                Manager.ResizeNodes[(int)NodePosition.TopLeft].Visible =
+                    Manager.ResizeNodes[(int)NodePosition.Top].Visible =
+                    Manager.ResizeNodes[(int)NodePosition.TopRight].Visible = false;
+            }
+
+            if (Manager.ResizeNodes[(int)NodePosition.BottomLeft].Rectangle.IntersectsWith(Manager.ResizeNodes[(int)NodePosition.BottomRight].Rectangle))
+            {
+                Manager.ResizeNodes[(int)NodePosition.TopLeft].Visible =
+                    Manager.ResizeNodes[(int)NodePosition.Left].Visible =
+                    Manager.ResizeNodes[(int)NodePosition.BottomLeft].Visible = false;
+            }
         }
 
         public virtual void Dispose()

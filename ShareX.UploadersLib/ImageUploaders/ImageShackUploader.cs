@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -25,6 +25,7 @@
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using ShareX.HelpersLib;
 using ShareX.UploadersLib.Properties;
 using System.Collections.Generic;
 using System.Drawing;
@@ -76,7 +77,7 @@ namespace ShareX.UploadersLib.ImageUploaders
                 args.Add("user", Config.Username);
                 args.Add("password", Config.Password);
 
-                string response = SendRequest(HttpMethod.POST, URLAccessToken, args);
+                string response = SendRequestMultiPart(URLAccessToken, args);
 
                 if (!string.IsNullOrEmpty(response))
                 {
@@ -100,7 +101,7 @@ namespace ShareX.UploadersLib.ImageUploaders
             arguments.Add("auth_token", Config.Auth_token);
             arguments.Add("public", Config.IsPublic ? "y" : "n");
 
-            UploadResult result = UploadData(stream, URLUpload, fileName, "file", arguments);
+            UploadResult result = SendRequestFile(URLUpload, stream, fileName, "file", arguments);
 
             if (!string.IsNullOrEmpty(result.Response))
             {
@@ -236,6 +237,7 @@ namespace ShareX.UploadersLib.ImageUploaders
     public class ImageShackOptions
     {
         public string Username { get; set; }
+        [JsonEncrypt]
         public string Password { get; set; }
         public bool IsPublic { get; set; }
         public string Auth_token { get; set; }

@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -35,34 +35,69 @@ namespace ShareX.ScreenCaptureLib
 
         public int CornerRadius { get; set; }
 
+        public override void OnConfigLoad()
+        {
+            base.OnConfigLoad();
+            CornerRadius = AnnotationOptions.DrawingCornerRadius;
+        }
+
+        public override void OnConfigSave()
+        {
+            base.OnConfigSave();
+            AnnotationOptions.DrawingCornerRadius = CornerRadius;
+        }
+
         public override void OnDraw(Graphics g)
+        {
+            DrawRectangle(g);
+        }
+
+        protected void DrawRectangle(Graphics g)
+        {
+            if (Shadow)
+            {
+                if (IsBorderVisible)
+                {
+                    DrawRectangle(g, ShadowColor, BorderSize, BorderStyle, Color.Transparent, Rectangle.LocationOffset(ShadowOffset), CornerRadius);
+                }
+                else if (FillColor.A == 255)
+                {
+                    DrawRectangle(g, Color.Transparent, 0, BorderStyle, ShadowColor, Rectangle.LocationOffset(ShadowOffset), CornerRadius);
+                }
+            }
+
+            DrawRectangle(g, BorderColor, BorderSize, BorderStyle, FillColor, Rectangle, CornerRadius);
+        }
+
+        protected void DrawRectangle(Graphics g, Color borderColor, int borderSize, BorderStyle borderStyle, Color fillColor, Rectangle rect, int cornerRadius)
         {
             Brush brush = null;
             Pen pen = null;
 
             try
             {
-                if (FillColor.A > 0)
+                if (fillColor.A > 0)
                 {
-                    brush = new SolidBrush(FillColor);
+                    brush = new SolidBrush(fillColor);
                 }
 
-                if (BorderSize > 0 && BorderColor.A > 0)
+                if (borderSize > 0 && borderColor.A > 0)
                 {
-                    pen = new Pen(BorderColor, BorderSize);
+                    pen = new Pen(borderColor, borderSize);
+                    pen.DashStyle = (DashStyle)borderStyle;
                 }
 
-                if (CornerRadius > 0)
+                if (cornerRadius > 0)
                 {
                     g.SmoothingMode = SmoothingMode.HighQuality;
 
-                    if (BorderSize.IsEvenNumber())
+                    if (borderSize.IsEvenNumber())
                     {
                         g.PixelOffsetMode = PixelOffsetMode.Half;
                     }
                 }
 
-                g.DrawRoundedRectangle(brush, pen, Rectangle, CornerRadius);
+                g.DrawRoundedRectangle(brush, pen, rect, cornerRadius);
 
                 g.SmoothingMode = SmoothingMode.None;
                 g.PixelOffsetMode = PixelOffsetMode.Default;

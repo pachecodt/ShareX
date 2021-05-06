@@ -2,7 +2,7 @@
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
-    Copyright (c) 2007-2016 ShareX Team
+    Copyright (c) 2007-2020 ShareX Team
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -24,19 +24,23 @@
 #endregion License Information (GPL v3)
 
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ShareX.HelpersLib
 {
     public class FileDownloader
     {
+        public event EventHandler FileSizeReceived, DownloadStarted, ProgressChanged, DownloadCompleted, ExceptionThrown;
+
         public string URL { get; private set; }
+        public string DownloadLocation { get; private set; }
         public bool IsDownloading { get; private set; }
         public bool IsCanceled { get; private set; }
+        public bool IsPaused { get; private set; }
         public long FileSize { get; private set; }
         public long DownloadedSize { get; private set; }
         public double DownloadSpeed { get; private set; }
@@ -54,83 +58,59 @@ namespace ShareX.HelpersLib
             }
         }
 
-        public Exception LastException { get; private set; }
-        public bool IsPaused { get; private set; }
         public IWebProxy Proxy { get; set; }
         public string AcceptHeader { get; set; }
+        public Exception LastException { get; private set; }
 
-        public event EventHandler FileSizeReceived;
-        public event EventHandler DownloadStarted;
-        public event EventHandler ProgressChanged;
-        public event EventHandler DownloadCompleted;
-        public event EventHandler ExceptionThrowed;
+        private const int bufferSize = 32768;
 
-        private BackgroundWorker worker;
-        private Stream stream;
-        private const int bufferSize = 4096;
-
-        public FileDownloader(string url, Stream stream, IWebProxy proxy = null, string acceptHeader = null)
+        public FileDownloader(string url, string downloadLocation, IWebProxy proxy = null, string acceptHeader = null)
         {
             URL = url;
-            this.stream = stream;
+            DownloadLocation = downloadLocation;
             Proxy = proxy;
             AcceptHeader = acceptHeader;
-
-            worker = new BackgroundWorker();
-            worker.WorkerReportsProgress = true;
-            worker.WorkerSupportsCancellation = true;
-            worker.DoWork += worker_DoWork;
-            worker.ProgressChanged += worker_ProgressChanged;
-            worker.RunWorkerCompleted += worker_RunWorkerCompleted;
-        }
-
-        private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            IsDownloading = false;
         }
 
         public void StartDownload()
         {
-            if (!IsDownloading && !string.IsNullOrEmpty(URL) && !worker.IsBusy)
+            if (!IsDownloading && !string.IsNullOrEmpty(URL))
             {
                 IsDownloading = true;
+                IsCanceled = false;
                 IsPaused = false;
-                worker.RunWorkerAsync();
-            }
-        }
 
-        public void ResumeDownload()
-        {
-            if (IsDownloading)
-            {
-                IsPaused = false;
-            }
-        }
-
-        public void PauseDownload()
-        {
-            if (IsDownloading)
-            {
-                IsPaused = true;
+                Progress<EventHandler> progress = new Progress<EventHandler>(OnProgressChanged);
+                Task.Run(() => DoWork(progress));
             }
         }
 
         public void StopDownload()
         {
-            if (IsDownloading)
-            {
-                IsCanceled = true;
-            }
+            IsCanceled = true;
         }
 
-        private void worker_DoWork(object sender, DoWorkEventArgs e)
+        public void PauseDownload()
         {
-            HttpWebResponse response = null;
+            IsPaused = true;
+        }
 
+        public void ResumeDownload()
+        {
+            IsPaused = false;
+        }
+
+        private void OnProgressChanged(EventHandler eventHandler)
+        {
+            eventHandler?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void DoWork(IProgress<EventHandler> progress)
+        {
             try
             {
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(URL);
-                request.UserAgent = "ShareX";
+                request.UserAgent = ShareXResources.UserAgent;
                 request.Proxy = Proxy;
 
                 if (!string.IsNullOrEmpty(AcceptHeader))
@@ -138,65 +118,73 @@ namespace ShareX.HelpersLib
                     request.Accept = AcceptHeader;
                 }
 
-                response = (HttpWebResponse)request.GetResponse();
-                FileSize = response.ContentLength;
-                ThrowEvent(FileSizeReceived);
-
-                if (FileSize > 0)
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
                 {
-                    Stopwatch timer = new Stopwatch();
-                    Stopwatch progressEventTimer = new Stopwatch();
-                    long speedTest = 0;
+                    FileSize = response.ContentLength;
 
-                    byte[] buffer = new byte[(int)Math.Min(bufferSize, FileSize)];
-                    int bytesRead;
+                    progress.Report(FileSizeReceived);
 
-                    ThrowEvent(DownloadStarted);
-
-                    while (DownloadedSize < FileSize && !worker.CancellationPending)
+                    if (FileSize > 0)
                     {
-                        while (IsPaused && !IsCanceled)
+                        Stopwatch timer = new Stopwatch();
+                        Stopwatch progressEventTimer = new Stopwatch();
+                        long speedTest = 0;
+
+                        byte[] buffer = new byte[(int)Math.Min(bufferSize, FileSize)];
+                        int bytesRead;
+
+                        using (FileStream fs = new FileStream(DownloadLocation, FileMode.Create, FileAccess.Write, FileShare.Read))
+                        using (Stream responseStream = response.GetResponseStream())
                         {
-                            timer.Reset();
-                            Thread.Sleep(10);
+                            progress.Report(DownloadStarted);
+
+                            while (DownloadedSize < FileSize && !IsCanceled)
+                            {
+                                while (IsPaused && !IsCanceled)
+                                {
+                                    timer.Reset();
+                                    Thread.Sleep(10);
+                                }
+
+                                if (IsCanceled)
+                                {
+                                    return;
+                                }
+
+                                if (!timer.IsRunning)
+                                {
+                                    timer.Start();
+                                }
+
+                                if (!progressEventTimer.IsRunning)
+                                {
+                                    progressEventTimer.Start();
+                                }
+
+                                bytesRead = responseStream.Read(buffer, 0, buffer.Length);
+                                fs.Write(buffer, 0, bytesRead);
+                                DownloadedSize += bytesRead;
+                                speedTest += bytesRead;
+
+                                if (timer.ElapsedMilliseconds > 500)
+                                {
+                                    DownloadSpeed = (double)speedTest / timer.ElapsedMilliseconds * 1000;
+                                    speedTest = 0;
+                                    timer.Reset();
+                                }
+
+                                if (progressEventTimer.ElapsedMilliseconds > 100)
+                                {
+                                    progress.Report(ProgressChanged);
+
+                                    progressEventTimer.Reset();
+                                }
+                            }
                         }
 
-                        if (IsCanceled)
-                        {
-                            return;
-                        }
-
-                        if (!timer.IsRunning)
-                        {
-                            timer.Start();
-                        }
-
-                        if (!progressEventTimer.IsRunning)
-                        {
-                            progressEventTimer.Start();
-                        }
-
-                        bytesRead = response.GetResponseStream().Read(buffer, 0, buffer.Length);
-                        stream.Write(buffer, 0, bytesRead);
-                        DownloadedSize += bytesRead;
-                        speedTest += bytesRead;
-
-                        if (timer.ElapsedMilliseconds > 500)
-                        {
-                            DownloadSpeed = (double)speedTest / timer.ElapsedMilliseconds * 1000;
-                            speedTest = 0;
-                            timer.Reset();
-                        }
-
-                        if (progressEventTimer.ElapsedMilliseconds > 100)
-                        {
-                            ThrowEvent(ProgressChanged);
-                            progressEventTimer.Reset();
-                        }
+                        progress.Report(ProgressChanged);
+                        progress.Report(DownloadCompleted);
                     }
-
-                    ThrowEvent(ProgressChanged);
-                    ThrowEvent(DownloadCompleted);
                 }
             }
             catch (Exception ex)
@@ -204,29 +192,28 @@ namespace ShareX.HelpersLib
                 if (!IsCanceled)
                 {
                     LastException = ex;
-                    ThrowEvent(ExceptionThrowed);
+
+                    progress.Report(ExceptionThrown);
                 }
             }
             finally
             {
-                if (response != null) response.Close();
-                if (stream != null) stream.Close();
+                if (IsCanceled)
+                {
+                    try
+                    {
+                        if (File.Exists(DownloadLocation))
+                        {
+                            File.Delete(DownloadLocation);
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                IsDownloading = false;
             }
-        }
-
-        private void worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-            EventHandler eventHandler = e.UserState as EventHandler;
-
-            if (eventHandler != null)
-            {
-                eventHandler(this, EventArgs.Empty);
-            }
-        }
-
-        private void ThrowEvent(EventHandler eventHandler)
-        {
-            worker.ReportProgress(0, eventHandler);
         }
     }
 }

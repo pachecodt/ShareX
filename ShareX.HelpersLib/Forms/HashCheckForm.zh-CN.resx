@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="$this.Text" xml:space="preserve">
-    <value>哈希（Hash）检查</value>
+    <value>ShareX - 哈希（Hash）检查</value>
   </data>
   <data name="btnFilePathBrowse.Text" xml:space="preserve">
     <value>浏览...</value>
@@ -126,17 +126,14 @@
   <data name="btnStartHashCheck.Text" xml:space="preserve">
     <value>开始</value>
   </data>
-  <data name="lblFile.Text" xml:space="preserve">
-    <value>文件路径:</value>
-  </data>
   <data name="lblHashType.Text" xml:space="preserve">
-    <value>哈希类型:</value>
+    <value>哈希（Hash）类型：</value>
   </data>
   <data name="lblResult.Text" xml:space="preserve">
-    <value>结果:</value>
+    <value>结果：</value>
   </data>
   <data name="lblTarget.Text" xml:space="preserve">
-    <value>目标:</value>
+    <value>目标：</value>
   </data>
   <data name="tpFileHashCheck.Text" xml:space="preserve">
     <value>文件哈希（Hash）检查</value>
@@ -177,7 +174,22 @@
   <data name="lblHashCheckHash.Text" xml:space="preserve">
     <value>哈希（Hash）：</value>
   </data>
+  <data name="btnFilePathBrowse2.Text" xml:space="preserve">
+    <value>浏览...</value>
+  </data>
+  <data name="lblProgressPercentage.Text" xml:space="preserve">
+    <value>0%</value>
+  </data>
   <data name="lblHashCheckASCII.Text" xml:space="preserve">
-    <value>ASCII：</value>
+    <value>ASCII:</value>
+  </data>
+  <data name="cbCompareTwoFiles.Text" xml:space="preserve">
+    <value>比较两个文件</value>
+  </data>
+  <data name="lblFilePath2.Text" xml:space="preserve">
+    <value>文件路径:</value>
+  </data>
+  <data name="lblFilePath.Text" xml:space="preserve">
+    <value>文件路径:</value>
   </data>
 </root>
