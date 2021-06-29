@@ -212,7 +212,7 @@ namespace ShareX
                     UploadManager.IndexFolder();
                     break;
                 case HotkeyType.ImageCombiner:
-                    OpenImageCombiner(safeTaskSettings);
+                    OpenImageCombiner(null, safeTaskSettings);
                     break;
                 case HotkeyType.ImageSplitter:
                     OpenImageSplitter();
@@ -225,6 +225,12 @@ namespace ShareX
                     break;
                 case HotkeyType.VideoThumbnailer:
                     OpenVideoThumbnailer(safeTaskSettings);
+                    break;
+                case HotkeyType.InspectWindow:
+                    OpenInspectWindow();
+                    break;
+                case HotkeyType.ClipboardViewer:
+                    OpenClipboardViewer();
                     break;
                 case HotkeyType.TweetMessage:
                     TweetMessage();
@@ -835,13 +841,26 @@ namespace ShareX
             form.Show();
         }
 
-        public static void OpenImageCombiner(TaskSettings taskSettings = null, IEnumerable<string> imageFiles = null)
+        public static void OpenImageCombiner(IEnumerable<string> imageFiles = null, TaskSettings taskSettings = null)
         {
             if (taskSettings == null) taskSettings = TaskSettings.GetDefaultTaskSettings();
 
             ImageCombinerForm imageCombinerForm = new ImageCombinerForm(taskSettings.ToolsSettingsReference.ImageCombinerOptions, imageFiles);
             imageCombinerForm.ProcessRequested += bmp => UploadManager.RunImageTask(bmp, taskSettings);
             imageCombinerForm.Show();
+        }
+
+        public static void CombineImages(IEnumerable<string> imageFiles, Orientation orientation, TaskSettings taskSettings = null)
+        {
+            if (taskSettings == null) taskSettings = TaskSettings.GetDefaultTaskSettings();
+
+            Bitmap output = ImageHelpers.CombineImages(imageFiles, orientation, taskSettings.ToolsSettings.ImageCombinerOptions.Alignment,
+                taskSettings.ToolsSettings.ImageCombinerOptions.Space, taskSettings.ToolsSettings.ImageCombinerOptions.AutoFillBackground);
+
+            if (output != null)
+            {
+                UploadManager.RunImageTask(output, taskSettings);
+            }
         }
 
         public static void OpenImageSplitter()
@@ -1573,6 +1592,8 @@ namespace ShareX
                     case HotkeyType.ImageThumbnailer: return Resources.image_resize_actual;
                     case HotkeyType.VideoConverter: return Resources.camcorder_pencil;
                     case HotkeyType.VideoThumbnailer: return Resources.images_stack;
+                    case HotkeyType.InspectWindow: return Resources.application_search_result;
+                    case HotkeyType.ClipboardViewer: return Resources.clipboard_block;
                     case HotkeyType.TweetMessage: return Resources.Twitter_16x16;
                     case HotkeyType.MonitorTest: return Resources.monitor;
                     // Other
